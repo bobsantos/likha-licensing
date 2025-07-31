@@ -31,7 +31,7 @@ When executing the task with subagents follow this workflow:
 
 - Work only with the allowed files and directories in the Allowed files section.
 
-2. Use the pm, infra, and backend subagents to collaborate and create these sections: Constraints and Requirements, Success Criteria.
+2. Use the pm, backend, frontend, infra subagents to collaborate and create these sections: Constraints and Requirements, Success Criteria.
 
 - Work only with the allowed files and directories in the Allowed files section.
 
