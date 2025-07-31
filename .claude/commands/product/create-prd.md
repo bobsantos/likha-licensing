@@ -23,6 +23,17 @@ When executing the task follow this workflow:
 
 - Only use the context of the current session.
 - Do not access any files or directories.
+- Follow this format:
+  <pr-desc-format>
+
+  # Context
+
+  Provide a brief summary of what we did.
+
+  # Changes
+
+  List down the most significant changes we made.
+  </pr-desc-format>
 
 ### Guidelines
 
