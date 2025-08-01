@@ -131,19 +131,33 @@ Before launching any subagents, the main agent MUST:
      - Dependencies satisfied
      - Timeline sequence
    - Note parallel execution opportunities vs. sequential requirements
-   - The agent who owns the next task(s) becomes the lead
+   - **IMPORTANT**: If multiple task candidates exist for the same timeline phase:
+     - All agents who own candidate tasks should collaborate
+     - Lead and collaborating agents must jointly decide task prioritization
+     - Consider factors: critical path, team availability, dependency chains, business value
+     - Document the prioritization rationale in the delivery plan
 
-2. **Lead Agent - Delivery Strategy Planning**
+2. **Lead Agent Selection and Prioritization**
+   - If single task owner: That agent becomes the lead
+   - If multiple task owners in same phase:
+     - Agent with most critical path tasks leads
+     - All task owners participate in prioritization discussion
+     - Collaborative decision on which tasks to start first
+     - Consider parallel execution capacity across teams
+
+3. **Lead Agent - Delivery Strategy Planning**
    - Define delivery milestones and key checkpoints for their domain
    - Identify critical path and potential blockers
    - Plan resource allocation and timeline
    - Coordinate with other domains for dependencies
+   - Document task prioritization decisions and rationale
 
-3. **Collaborating Agents - Domain-Specific Planning**
+4. **Collaborating Agents - Domain-Specific Planning**
    - All other agents analyze their domain-specific tasks from tasks.md
    - Define what needs to be delivered in their area
    - Identify dependencies and integration points
    - Specify delivery sequence and handoff requirements
+   - Provide input on task prioritization when multiple candidates exist
 
 ### Output Format
 
