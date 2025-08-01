@@ -31,20 +31,22 @@ The Technical Specifications section should describe architecture approaches and
 
 ### CRITICAL OUTPUT REQUIREMENT
 
-The PRD MUST be generated at: @.claude/likha-vibe-coding/prod-dev/prd.md
+The PRD MUST be generated at: .claude/likha-vibe-coding/prod-dev/prd.md
 
 Do NOT create the PRD file in:
 - scratch/ directory
 - root directory  
 - any other location
 
-Use the Write tool with the EXACT path: @.claude/likha-vibe-coding/prod-dev/prd.md
+Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/prd.md
+
+**IMPORTANT**: Use `.claude/` (with dot prefix) NOT `@.claude/` to reference the existing .claude directory in the repository.
 
 ### Generating the PRD
 
-When generating the PRD, use the template @.claude/likha-vibe-coding/templates/prd-tmpl.md and generate the final PRD file at:
+When generating the PRD, use the template .claude/likha-vibe-coding/templates/prd-tmpl.md and generate the final PRD file at:
 
-**OUTPUT FILE: @.claude/likha-vibe-coding/prod-dev/prd.md**
+**OUTPUT FILE: .claude/likha-vibe-coding/prod-dev/prd.md**
 
 IMPORTANT: The PRD MUST be created at this exact path, not in any other location.
 
@@ -54,10 +56,10 @@ While performing this task try to remind yourself and the subagents to prioritis
 
 **ALLOWED FILES AND DIRECTORIES ONLY:**
 
-- @.claude/likha-vibe-coding/templates/brief-tmpl.md
-- @.claude/likha-vibe-coding/templates/prd-tmpl.md
-- @.claude/likha-vibe-coding/prod-dev/\* (all files in this directory)
-- @.claude/likha-vibe-coding/data/\* (all files in this directory)
+- .claude/likha-vibe-coding/templates/brief-tmpl.md
+- .claude/likha-vibe-coding/templates/prd-tmpl.md
+- .claude/likha-vibe-coding/prod-dev/\* (all files in this directory)
+- .claude/likha-vibe-coding/data/\* (all files in this directory)
 
 **CRITICAL RESTRICTIONS:**
 
@@ -80,7 +82,7 @@ While performing this task try to remind yourself and the subagents to prioritis
 
 When generating the PRD use this workflow step-by-step:
 
-1. Check if you have access to the project brief: @.claude/likha-vibe-coding/prod-dev/brief.md. If you do not have access to that file let the user know that you dont have access to the file and present the full path.
+1. Check if you have access to the project brief: .claude/likha-vibe-coding/prod-dev/brief.md. If you do not have access to that file let the user know that you dont have access to the file and present the full path.
 
 2. Create these sections: Overview, User Requirements.
 
@@ -103,19 +105,19 @@ When generating the PRD use this workflow step-by-step:
 
 6. Verify the output directory exists and confirm the target file path
 
-- Check that the directory @.claude/likha-vibe-coding/prod-dev/ exists
-- Confirm you will write to: @.claude/likha-vibe-coding/prod-dev/prd.md
+- Check that the directory .claude/likha-vibe-coding/prod-dev/ exists
+- Confirm you will write to: .claude/likha-vibe-coding/prod-dev/prd.md
 - If the directory doesn't exist, create it first
 
-7. Generate the final PRD file at @.claude/likha-vibe-coding/prod-dev/prd.md
+7. Generate the final PRD file at .claude/likha-vibe-coding/prod-dev/prd.md
 
-CRITICAL: Use the Write tool to create the PRD file at the EXACT path: @.claude/likha-vibe-coding/prod-dev/prd.md
+CRITICAL: Use the Write tool to create the PRD file at the EXACT path: .claude/likha-vibe-coding/prod-dev/prd.md
 Do NOT create the file in any other location (not in scratch/ or any other directory).
 
 8. Validate PRD file creation
 
 After generating the PRD, confirm:
-- The file was created at @.claude/likha-vibe-coding/prod-dev/prd.md
+- The file was created at .claude/likha-vibe-coding/prod-dev/prd.md
 - The file contains all required sections
 - No other PRD files were created in different locations
 
