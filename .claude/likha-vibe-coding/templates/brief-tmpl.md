@@ -63,4 +63,4 @@ Put risks and dependencies here. Replace this with content relevant to:
 - Market risks
 - Cross-team dependencies
 - Mitigation strategies
-</success-criteria>
+</risks-dependencies>
