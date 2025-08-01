@@ -1,0 +1,51 @@
+# Development Dockerfile with hot reload support for Spring Modulith monolith
+FROM maven:3.9-eclipse-temurin-21
+
+# Install Node.js for frontend building
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs curl
+
+WORKDIR /app
+
+# Copy pom.xml first for better Docker layer caching
+COPY backend/pom.xml ./pom.xml
+
+# Download Maven dependencies (this layer will be cached)
+RUN mvn dependency:go-offline -B
+
+# Copy frontend package.json for npm dependency caching
+COPY frontend/package*.json ./frontend/
+
+# Install npm dependencies (this layer will be cached)
+RUN cd frontend && npm ci
+
+# Copy source code
+COPY backend/src ./src
+COPY frontend/ ./frontend/
+
+# Build frontend initially
+RUN cd frontend && npm run build
+
+# Ensure static resources directory exists
+RUN mkdir -p src/main/resources/static
+
+# Copy built frontend to Spring Boot static resources
+RUN if [ -d "frontend/dist" ]; then cp -r frontend/dist/* src/main/resources/static/; fi
+
+# Expose ports
+EXPOSE 8080 35729
+
+# Create a script to rebuild frontend when needed and start Spring Boot
+RUN echo '#!/bin/bash\n\
+echo "Starting Likha Licensing Platform in development mode..."\n\
+echo "Building frontend..."\n\
+cd frontend && npm run build && cd ..\n\
+echo "Copying frontend assets to static resources..."\n\
+mkdir -p src/main/resources/static\n\
+if [ -d "frontend/dist" ]; then cp -r frontend/dist/* src/main/resources/static/; fi\n\
+echo "Starting Spring Boot with hot reload..."\n\
+mvn spring-boot:run -Dspring-boot.run.profiles=dev\n\
+' > /app/start-dev.sh && chmod +x /app/start-dev.sh
+
+# Use custom start script for development
+CMD ["/app/start-dev.sh"]

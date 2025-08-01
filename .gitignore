@@ -1,2 +1,49 @@
 settings.local.json
 scratch/
+
+# Environment Configuration
+.env.local
+.env.production
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+.docker/
+
+# Logs
+*.log
+logs/
+
+# Maven
+backend/target/
+!backend/target/classes/static/
+
+# Node.js
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test Coverage
+coverage/
+*.coverage
+
+# Temporary Files
+*.temp
+*.tmp

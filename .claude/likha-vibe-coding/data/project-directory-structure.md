@@ -16,3 +16,5 @@ Here's the basic project layout which should serve as a guide when bootstrapping
 │ └── pom.xml # Maven dependencies
 ├── docker-compose.yaml # Docker Compose file to manage multi-container application
 └── README.md # Project documentation
+
+For the backend we will use app.likha as project package name.

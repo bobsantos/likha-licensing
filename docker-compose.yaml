@@ -1,0 +1,140 @@
+services:
+  # PostgreSQL Database - Schema-per-tenant multi-tenancy
+  postgres:
+    image: postgres:15-alpine
+    container_name: likha-postgres
+    environment:
+      POSTGRES_DB: likha_licensing
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - likha-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d likha_licensing"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Application with Spring Modulith
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: likha-app
+    environment:
+      # Database Configuration
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/likha_licensing
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      
+      # JPA Configuration (using JPA with Spring Modulith)
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_JPA_SHOW_SQL: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_OPEN_IN_VIEW: false
+      
+      # Flyway Configuration
+      SPRING_FLYWAY_ENABLED: true
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: true
+      
+      # Application Configuration
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+      
+      # Spring Modulith Configuration
+      SPRING_MODULITH_EVENTS_EXTERNALIZATION_ENABLED: true
+      
+      # Development Configuration
+      SPRING_DEVTOOLS_RESTART_ENABLED: true
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: true
+      
+      # Logging Configuration
+      LOGGING_LEVEL_APP_LIKHA: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_MODULITH: DEBUG
+      LOGGING_LEVEL_SQL: DEBUG
+      
+      # Security Configuration (Development)
+      SPRING_SECURITY_USER_NAME: admin
+      SPRING_SECURITY_USER_PASSWORD: admin123
+      
+      # Multi-tenant Configuration
+      APP_MULTITENANCY_ENABLED: true
+      APP_MULTITENANCY_DEFAULT_TENANT: default
+    ports:
+      - "8080:8080"
+      - "35729:35729" # LiveReload port
+    volumes:
+      # Hot reload for backend development
+      - ./backend/src:/app/src
+      - ./backend/pom.xml:/app/pom.xml
+      - ./frontend:/app/frontend
+      - maven_cache:/root/.m2
+      # Node modules cache for frontend builds
+      - frontend_node_modules:/app/frontend/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - likha-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Redis for caching and session management (optional but recommended)
+  redis:
+    image: redis:7-alpine
+    container_name: likha-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - likha-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # Adminer for database management (development only)
+  adminer:
+    image: adminer:4.8.1
+    container_name: likha-adminer
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: pepa-linha-dark
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+    networks:
+      - likha-network
+    profiles:
+      - tools
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  maven_cache:
+    driver: local
+  frontend_node_modules:
+    driver: local
+
+networks:
+  likha-network:
+    driver: bridge
+    name: likha-licensing-network
