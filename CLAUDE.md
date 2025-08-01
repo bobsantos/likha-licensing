@@ -18,7 +18,7 @@ When implementing features or stories, always aim for an MVP in at most 2 weeks.
 
 ## Task Delegation
 
-**CRITICAL**: You MUST delegate technical tasks to the appropriate specialized agents as much as possible. Do NOT perform technical implementation yourself unless it's a trivial task that can be completed in 1-2 tool calls.
+**CRITICAL**: You MUST delegate technical tasks to the appropriate specialized agents IMMEDIATELY upon receiving the user request. Do NOT perform ANY investigation, file reading, or analysis before delegating unless it's a trivial task that can be completed in 1-2 tool calls.
 
 **Always delegate to:**
 - **@agent-infra** - Infrastructure, Docker, DevOps, deployment, monitoring, database setup
@@ -34,7 +34,9 @@ When implementing features or stories, always aim for an MVP in at most 2 weeks.
 - Setup and troubleshooting issues
 
 **Exceptions (do NOT delegate):**
-- Simple file reads or searches
-- Project planning and task organization
+- Simple file reads or searches ONLY when explicitly requested by user
+- Project planning and task organization  
 - User communication and coordination
 - Trivial edits (1-2 lines of text/config)
+
+**DO NOT investigate, analyze, or gather context before delegating technical issues. Delegate first, let the agent do the investigation.**

@@ -18,6 +18,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
+    defer-datasource-initialization: ${SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION:false}
 
   flyway:
     enabled: ${SPRING_FLYWAY_ENABLED:true}
@@ -29,6 +30,8 @@ spring:
     events:
       externalization:
         enabled: ${SPRING_MODULITH_EVENTS_EXTERNALIZATION_ENABLED:false}
+      jdbc-schema-initialization:
+        enabled: false  # Always let Flyway handle schema creation
 
 # Server Configuration
 server:

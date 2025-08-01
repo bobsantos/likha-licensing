@@ -52,13 +52,13 @@ fi
 echo -e "${YELLOW}🧹 Cleaning up any existing containers...${NC}"
 # Remove any existing containers with the same names to prevent conflicts
 docker rm -f likha-app likha-postgres likha-redis likha-adminer 2>/dev/null || true
-$COMPOSE_CMD down --remove-orphans --timeout 10
+$COMPOSE_CMD --profile tools down --remove-orphans --timeout 10
 
 echo -e "${YELLOW}📦 Building application container...${NC}"
 $COMPOSE_CMD build app
 
 echo -e "${YELLOW}🏗️  Starting services...${NC}"
-$COMPOSE_CMD up -d
+$COMPOSE_CMD --profile tools up -d
 
 echo ""
 echo -e "${GREEN}✅ Development environment started successfully!${NC}"
@@ -66,12 +66,12 @@ echo ""
 echo -e "${BLUE}📍 Available Services:${NC}"
 echo -e "   🌐 Application: http://localhost:8080"
 echo -e "   🗄️  Database: localhost:5432 (postgres/postgres)"
-echo -e "   📊 Adminer: http://localhost:8081 (use profile: docker-compose --profile tools up -d)"
-echo -e "   🗄️  Redis: localhost:6379"
+echo -e "   🛠️  Adminer: http://localhost:8081"
+echo -e "   📊 Redis: localhost:6379"
 echo ""
 echo -e "${BLUE}📋 Useful Commands:${NC}"
 echo -e "   View logs: ${COMPOSE_CMD} logs -f"
-echo -e "   Stop services: ${COMPOSE_CMD} down"
+echo -e "   Stop services: ${COMPOSE_CMD} --profile tools down"
 echo -e "   Restart app: ${COMPOSE_CMD} restart app"
 echo -e "   Database shell: ${COMPOSE_CMD} exec postgres psql -U postgres -d likha_licensing"
 echo ""
@@ -170,6 +170,13 @@ if ! wait_for_service "redis" "$COMPOSE_CMD exec -T redis redis-cli ping | grep 
     exit 1
 fi
 
+# 2.5. Wait for Adminer
+if ! wait_for_service "adminer" "curl -s --max-time 5 http://localhost:8081 > /dev/null" 30 2 "Adminer database manager"; then
+    echo -e "${RED}❌ Adminer startup failed${NC}"
+    echo -e "${YELLOW}💡 Try: $COMPOSE_CMD logs adminer${NC}"
+    exit 1
+fi
+
 # 3. Wait for Spring Boot application
 echo -n "⏳ Waiting for Spring Boot application"
 spring_boot_ready=false
@@ -258,6 +265,15 @@ else
     echo -e " ${YELLOW}⚠️  (readiness probe not available)${NC}"
 fi
 
+# Check Adminer availability
+echo -n "🛠️  Adminer availability"
+if curl -s --max-time 5 http://localhost:8081 > /dev/null 2>&1; then
+    echo -e " ${GREEN}✅${NC}"
+else
+    echo -e " ${RED}❌${NC}"
+    services_healthy=false
+fi
+
 if [ "$services_healthy" = false ]; then
     echo ""
     echo -e "${RED}❌ Some services are not healthy. Please check the logs above.${NC}"
@@ -272,11 +288,11 @@ echo -e "${BLUE}📍 Available Services:${NC}"
 echo -e "   🌐 Application: http://localhost:8080 (Status: ${GREEN}Healthy${NC})"
 echo -e "   🗄️  PostgreSQL: localhost:5432 (Status: ${GREEN}Connected${NC})"
 echo -e "   📊 Redis: localhost:6379 (Status: ${GREEN}Connected${NC})"
-echo -e "   🛠️  Adminer: http://localhost:8081 (Profile: tools)"
+echo -e "   🛠️  Adminer: http://localhost:8081 (Status: ${GREEN}Available${NC})"
 echo ""
 echo -e "${BLUE}📋 Useful Commands:${NC}"
 echo -e "   View logs: $COMPOSE_CMD logs -f [service]"
-echo -e "   Stop services: $COMPOSE_CMD down"
+echo -e "   Stop services: $COMPOSE_CMD --profile tools down"
 echo -e "   Restart app: $COMPOSE_CMD restart app"
 echo -e "   Database shell: $COMPOSE_CMD exec postgres psql -U postgres -d likha_licensing"
 echo -e "   Follow all logs: scripts/dev-logs.sh all"

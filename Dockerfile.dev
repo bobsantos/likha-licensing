@@ -7,11 +7,12 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
 
 WORKDIR /app
 
-# Copy pom.xml first for better Docker layer caching
-COPY backend/pom.xml ./pom.xml
+# Copy parent pom.xml first for better Docker layer caching
+COPY pom.xml ./pom.xml
+COPY backend/pom.xml ./backend/pom.xml
 
 # Download Maven dependencies (this layer will be cached)
-RUN mvn dependency:go-offline -B
+RUN mvn dependency:go-offline -B -f backend/pom.xml
 
 # Copy frontend package.json for npm dependency caching
 COPY frontend/package*.json ./frontend/
@@ -20,17 +21,17 @@ COPY frontend/package*.json ./frontend/
 RUN cd frontend && npm ci
 
 # Copy source code
-COPY backend/src ./src
+COPY backend/src ./backend/src
 COPY frontend/ ./frontend/
 
 # Build frontend initially
 RUN cd frontend && npm run build
 
 # Ensure static resources directory exists
-RUN mkdir -p src/main/resources/static
+RUN mkdir -p backend/src/main/resources/static
 
 # Copy built frontend to Spring Boot static resources
-RUN if [ -d "frontend/dist" ]; then cp -r frontend/dist/* src/main/resources/static/; fi
+RUN if [ -d "frontend/dist" ]; then cp -r frontend/dist/* backend/src/main/resources/static/; fi
 
 # Expose ports
 EXPOSE 8080 35729
@@ -41,10 +42,10 @@ echo "Starting Likha Licensing Platform in development mode..."\n\
 echo "Building frontend..."\n\
 cd frontend && npm run build && cd ..\n\
 echo "Copying frontend assets to static resources..."\n\
-mkdir -p src/main/resources/static\n\
-if [ -d "frontend/dist" ]; then cp -r frontend/dist/* src/main/resources/static/; fi\n\
+mkdir -p backend/src/main/resources/static\n\
+if [ -d "frontend/dist" ]; then cp -r frontend/dist/* backend/src/main/resources/static/; fi\n\
 echo "Starting Spring Boot with hot reload..."\n\
-mvn spring-boot:run -Dspring-boot.run.profiles=dev\n\
+cd backend && mvn spring-boot:run -Dspring-boot.run.profiles=dev\n\
 ' > /app/start-dev.sh && chmod +x /app/start-dev.sh
 
 # Use custom start script for development

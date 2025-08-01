@@ -11,6 +11,12 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * This is a monolithic Spring Boot application that serves both:
  * - Backend REST APIs for licensing management
  * - Frontend React application (built assets served as static resources)
+ * 
+ * Key architectural decisions:
+ * - Uses Spring Modulith for modular monolith architecture
+ * - Schema-per-tenant multi-tenancy with PostgreSQL
+ * - Spring JDBC for data access (no heavy ORM)
+ * - Event-driven architecture with Spring Modulith events
  */
 @SpringBootApplication
 @EnableAsync

@@ -50,7 +50,7 @@ services:
       SERVER_PORT: 8080
       
       # Spring Modulith Configuration
-      SPRING_MODULITH_EVENTS_EXTERNALIZATION_ENABLED: true
+      SPRING_MODULITH_EVENTS_EXTERNALIZATION_ENABLED: false
       
       # Development Configuration
       SPRING_DEVTOOLS_RESTART_ENABLED: true
@@ -73,8 +73,9 @@ services:
       - "35729:35729" # LiveReload port
     volumes:
       # Hot reload for backend development
-      - ./backend/src:/app/src
-      - ./backend/pom.xml:/app/pom.xml
+      - ./backend/src:/app/backend/src
+      - ./backend/pom.xml:/app/backend/pom.xml
+      - ./pom.xml:/app/pom.xml
       - ./frontend:/app/frontend
       - maven_cache:/root/.m2
       # Node modules cache for frontend builds

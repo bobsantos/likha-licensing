@@ -3,35 +3,19 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
-        <relativePath/>
+        <groupId>app.likha</groupId>
+        <artifactId>licensing-platform-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>app.likha</groupId>
-    <artifactId>licensing-platform</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>licensing-platform-backend</artifactId>
     <name>Likha Licensing Platform</name>
     <description>Enterprise licensing software platform</description>
     <properties>
-        <java.version>21</java.version>
         <node.version>v20.10.0</node.version>
         <npm.version>10.2.3</npm.version>
-        <spring-modulith.version>1.1.1</spring-modulith.version>
-        <frontend.skip>false</frontend.skip>
+        <frontend.working.directory>../frontend</frontend.working.directory>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.modulith</groupId>
-                <artifactId>spring-modulith-bom</artifactId>
-                <version>${spring-modulith.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     <dependencies>
         <!-- Spring Boot Starters -->
         <dependency>
@@ -59,10 +43,6 @@
         <dependency>
             <groupId>org.springframework.modulith</groupId>
             <artifactId>spring-modulith-starter-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.modulith</groupId>
-            <artifactId>spring-modulith-starter-jpa</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.modulith</groupId>
@@ -155,6 +135,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <mainClass>app.likha.LicensingPlatformApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -164,13 +145,50 @@
                 </configuration>
             </plugin>
 
+            <!-- Frontend Directory Validation Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-frontend-directory</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${frontend.skip}</skip>
+                            <rules>
+                                <requireFilesExist>
+                                    <files>
+                                        <file>../frontend</file>
+                                        <file>../frontend/package.json</file>
+                                    </files>
+                                    <message>ERROR: Frontend directory or package.json not found!
+
+Expected structure:
+- ../frontend/ (directory)  
+- ../frontend/package.json (file)
+
+To skip frontend build, use: mvn clean package -Dfrontend.skip=true
+
+To initialize frontend, run from project root:
+- cd ../frontend
+- npm install</message>
+                                </requireFilesExist>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Frontend Maven Plugin -->
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>1.15.0</version>
                 <configuration>
-                    <workingDirectory>../frontend</workingDirectory>
+                    <workingDirectory>${frontend.working.directory}</workingDirectory>
                     <installDirectory>${project.build.directory}</installDirectory>
                     <skip>${frontend.skip}</skip>
                 </configuration>
@@ -204,6 +222,9 @@
                         </goals>
                         <configuration>
                             <arguments>run build</arguments>
+                            <environmentVariables>
+                                <NODE_ENV>production</NODE_ENV>
+                            </environmentVariables>
                         </configuration>
                     </execution>
                 </executions>
@@ -225,7 +246,7 @@
                             <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>../frontend/dist</directory>
+                                    <directory>${frontend.working.directory}/dist</directory>
                                     <filtering>false</filtering>
                                 </resource>
                             </resources>
