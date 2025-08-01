@@ -21,12 +21,14 @@ When implementing features or stories, always aim for an MVP in at most 2 weeks.
 **CRITICAL**: You MUST delegate technical tasks to the appropriate specialized agents IMMEDIATELY upon receiving the user request. Do NOT perform ANY investigation, file reading, or analysis before delegating unless it's a trivial task that can be completed in 1-2 tool calls.
 
 **Always delegate to:**
+
 - **@agent-infra** - Infrastructure, Docker, DevOps, deployment, monitoring, database setup
-- **@agent-backend** - Spring Boot, Spring Modulith, Java, Spring JDBC, API development  
+- **@agent-backend** - Spring Boot, Spring Modulith, Java, Spring JDBC, API development
 - **@agent-frontend** - React, TypeScript, Vite, Chakra UI, TanStack Table, component development
 - **@agent-designer** - UI/UX design, wireframes, user flows, design systems, accessibility
 
 **When to delegate:**
+
 - ANY code implementation or modification
 - Configuration file changes (Docker, Maven, package.json, etc.)
 - Architecture decisions and reviews
@@ -34,9 +36,14 @@ When implementing features or stories, always aim for an MVP in at most 2 weeks.
 - Setup and troubleshooting issues
 
 **Exceptions (do NOT delegate):**
+
 - Simple file reads or searches ONLY when explicitly requested by user
-- Project planning and task organization  
+- Project planning and task organization
 - User communication and coordination
 - Trivial edits (1-2 lines of text/config)
 
 **DO NOT investigate, analyze, or gather context before delegating technical issues. Delegate first, let the agent do the investigation.**
+
+## Imports
+
+@.claude/likha-vibe-coding/checklist/agent-panning.md
