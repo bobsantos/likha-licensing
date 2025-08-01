@@ -17,11 +17,13 @@
 
 ## Task Breakdown by Team
 
-**14 Tasks Total**:
-- **4 Backend tasks**: Core schema service, APIs, security, audit logging
-- **3 Frontend tasks**: Provisioning wizard, status monitoring, admin interface  
-- **5 Infrastructure tasks**: Database setup, Docker dev environment, Docker production, monitoring, deployment pipeline
-- **2 Design tasks**: Wizard design specs, status interface design
+**14 Tasks Total (Revised for Deferred Deployment)**:
+- **4 Backend tasks**: Core schema service, APIs, security, audit logging *(unchanged)*
+- **3 Frontend tasks**: Provisioning wizard, status monitoring, admin interface *(unchanged)*
+- **5 Infrastructure tasks**: Docker dev environment, local database setup, basic containerization, minimal monitoring, *1 deferred deployment task*
+- **2 Design tasks**: Wizard design specs, status interface design *(unchanged)*
+
+**Deferred Deployment Strategy**: Production infrastructure (AWS RDS, comprehensive monitoring, deployment pipeline) deferred until customer demo validates MVP feature market fit.
 
 ## Task Breakdown by Team
 
@@ -129,38 +131,46 @@
 
 ### Infrastructure Tasks
 
-#### US-001-T008: PostgreSQL Multi-Tenant Database Setup
-- **Title**: Configure AWS RDS PostgreSQL for schema-per-tenant architecture
+#### US-001-T008: PostgreSQL Multi-Tenant Database Setup (Local Development Focus)
+- **Title**: Configure Docker PostgreSQL for local development of schema-per-tenant architecture
 - **Owner**: Infrastructure
 - **Status**: pending
-- **Priority**: Critical
-- **Estimated Effort**: 1 day
-- **Dependencies**: None
+- **Priority**: Medium (reduced from Critical)
+- **Estimated Effort**: 0.25 days (reduced from 0.5 days - simplified scope)
+- **Dependencies**: US-001-T010 (Docker environment)
 - **Acceptance Criteria**:
-  - AWS RDS PostgreSQL 15+ with Multi-AZ configuration
-  - HikariCP connection pooling setup
-  - Basic database security and encryption
-  - Schema creation automation capability
-- **Deliverable Notes**: Essential database configuration, not advanced optimization
+  - Docker Compose PostgreSQL 15+ service configuration for local development
+  - Basic connection pooling setup for multi-tenant schema development
+  - Schema-per-tenant initialization scripts for development testing
+  - Local database connection configuration for MVP feature development
+  - Docker volumes for local data persistence during development
+  - Basic multi-tenant database setup for feature validation
+- **Deliverable Notes**: Local development PostgreSQL setup optimized for MVP feature development and validation
+- **Deferred Components**: Production deployment, AWS RDS setup, production-grade security, performance tuning
+- **Cost-Saving Impact**: Eliminates AWS RDS costs (~$200-400/month) and deployment infrastructure costs during MVP feature development
+- **Customer Demo Trigger**: Production deployment infrastructure will be implemented only after successful customer demo validates MVP feature market fit
 
-#### US-001-T009: Monitoring and Observability Setup
-- **Title**: Implement basic monitoring for provisioning operations
+#### US-001-T009: Local Development Monitoring Setup (Deferred Production Monitoring)
+- **Title**: Implement basic local monitoring for MVP feature development
 - **Owner**: Infrastructure
 - **Status**: pending
-- **Priority**: High
-- **Estimated Effort**: 1 day
-- **Dependencies**: US-001-T008
+- **Priority**: Low (reduced from High - deferred to post-demo)
+- **Estimated Effort**: 0.25 days (reduced from 0.5 days - basic monitoring only)
+- **Dependencies**: US-001-T008, US-001-T010
 - **Acceptance Criteria**:
-  - CloudWatch metrics for provisioning success/failure rates
-  - Basic performance monitoring for <2 minute SLA
-  - Error alerting for failed provisioning attempts
-  - Audit log aggregation in CloudWatch
-- **Deliverable Notes**: Essential monitoring setup, not comprehensive observability
+  - Basic Docker container health checks for local development
+  - Spring Boot Actuator endpoints for local feature testing
+  - Simple application logging for development debugging
+  - Basic error tracking during local MVP feature development
+- **Deliverable Notes**: Minimal monitoring focused on local development needs only
+- **Deferred Components**: Production monitoring, alerting, comprehensive observability, CloudWatch integration
+- **Cost-Saving Impact**: Eliminates CloudWatch costs (~$50-100/month) and monitoring infrastructure during feature development
+- **Customer Demo Trigger**: Comprehensive monitoring will be implemented after customer demo validates feature value
 
 #### US-001-T010: Docker Development Environment Setup
 - **Title**: Create Docker containers for local development environment isolation
 - **Owner**: Infrastructure
-- **Status**: pending
+- **Status**: done
 - **Priority**: Critical
 - **Estimated Effort**: 1 day
 - **Dependencies**: None
@@ -187,20 +197,18 @@
   - Build automation in CI/CD pipeline
 - **Deliverable Notes**: Production-ready containerization, not complex optimization
 
-#### US-001-T012: Deployment Pipeline and Infrastructure as Code
-- **Title**: Create infrastructure deployment pipeline with basic CI/CD
+#### US-001-T012: Deployment Pipeline (Fully Deferred Until Customer Demo)
+- **Title**: Production deployment pipeline - deferred until MVP feature validation
 - **Owner**: Infrastructure
-- **Status**: pending
-- **Priority**: High
-- **Estimated Effort**: 1 day
-- **Dependencies**: US-001-T008, US-001-T011
-- **Acceptance Criteria**:
-  - Terraform/CDK configuration for RDS and networking
-  - GitHub Actions workflow for infrastructure deployment
-  - Container registry integration (ECR) for Docker images
-  - Environment promotion pipeline (dev → staging → production)
-  - Basic health checks and rollback capability
-- **Deliverable Notes**: Basic deployment pipeline with containerization support
+- **Status**: deferred
+- **Priority**: Deferred (was High - moved to post-demo phase)
+- **Estimated Effort**: 0.5 days (moved to post-demo implementation)
+- **Dependencies**: Customer demo validation, then US-001-T010, US-001-T011
+- **Acceptance Criteria**: N/A - Task fully deferred until customer demo triggers production deployment need
+- **Deliverable Notes**: No deliverables during MVP feature development phase
+- **Deferred Components**: All deployment pipeline work deferred - Docker Compose production, GitHub Actions, container registry, deployment scripts
+- **Cost-Saving Impact**: Eliminates deployment infrastructure setup costs and AWS service costs during MVP feature development
+- **Customer Demo Trigger**: Full deployment pipeline implementation will begin only after successful customer demo validates market need for production deployment
 
 ### Design Tasks
 
@@ -232,35 +240,43 @@
   - Developer handoff specifications
 - **Deliverable Notes**: Essential UX patterns, not comprehensive design system
 
-## Implementation Timeline
+## Implementation Timeline - MVP Feature Focus (Customer Demo First)
 
-### Week 1: Foundation and Core Functionality (Days 1-5)
+### Week 1: Foundation and Core MVP Feature (Days 1-5)
 
-#### Days 1-2: Infrastructure and Backend Foundation
+#### Days 1-2: Local Development Foundation
 - **Parallel Execution**:
-  - US-001-T008: PostgreSQL Multi-Tenant Database Setup (Infrastructure)
   - US-001-T010: Docker Development Environment Setup (Infrastructure) - **CRITICAL for dev workflow**
   - US-001-T001: Core Schema Provisioning Service (Backend)
   - US-001-T013: Provisioning Wizard Design Specifications (Design)
+  - US-001-T008: PostgreSQL Multi-Tenant Database Setup - Local Development (Infrastructure) - **SIMPLIFIED SCOPE**
 
-#### Days 2-3: Security and API Development
+#### Days 2-3: Security and API Development (MVP Core)
 - **Sequential Dependencies**:
   - US-001-T002: Tenant Provisioning API Endpoints (Backend) - depends on T001
   - US-001-T003: Security Isolation and Validation (Backend) - depends on T001
-  - US-001-T011: Application Containerization and Production Dockerfile (Infrastructure) - depends on T001, T002
+  - US-001-T011: Application Containerization (Infrastructure) - **LOCAL ONLY** - depends on T001, T002
   - US-001-T014: Status Interface and Error State Design (Design) - depends on T013
 
-#### Days 3-4: Frontend Development and Integration
+#### Days 3-4: Frontend Development and MVP Feature Completion
 - **Parallel Execution**:
   - US-001-T005: Multi-Step Provisioning Wizard (Frontend) - depends on T002, T014
-  - US-001-T009: Monitoring and Observability Setup (Infrastructure) - depends on T008
-
-#### Days 4-5: Completion and Production Readiness
-- **Final Integration**:
   - US-001-T006: Real-Time Status Monitoring Interface (Frontend) - depends on T002, T005
+  - US-001-T009: Basic Local Monitoring (Infrastructure) - **MINIMAL SCOPE** - depends on T008
+
+#### Days 4-5: MVP Feature Integration and Demo Preparation
+- **Final MVP Integration**:
   - US-001-T007: Administrative Tenant Management Interface (Frontend) - depends on T002, T004
   - US-001-T004: Audit Trail and Compliance Logging (Backend) - depends on T001, T002
-  - US-001-T012: Deployment Pipeline and Infrastructure as Code (Infrastructure) - depends on T008, T011
+  - **Demo Preparation**: End-to-end testing of complete MVP feature
+  - **Customer Demo Readiness**: Validate feature works completely in local environment
+
+### Post-Customer Demo: Production Deployment (Only if Demo Successful)
+- **Production Infrastructure** (Triggered by successful customer demo):
+  - US-001-T008: Production PostgreSQL setup with AWS RDS
+  - US-001-T009: Comprehensive monitoring and alerting
+  - US-001-T012: Full deployment pipeline and infrastructure as code
+  - **Estimated Timeline**: 2-3 additional days after demo validates market fit
 
 ### Critical Path Dependencies
 
