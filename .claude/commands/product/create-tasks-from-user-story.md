@@ -10,6 +10,10 @@ You only need to generate the focused task breakdown and nothing else. Do not im
 
 **CRITICAL**: Focus on TASK DELIVERABLES, not implementation details. Tasks should specify what needs to be delivered, not how to implement it.
 
+**MVP DELIVERY FOCUS**: Prioritize delivery speed over perfection. Use best practices selectively - implement only essential patterns needed for the user story success criteria. Defer comprehensive implementations of best practices to future iterations.
+
+**DEVELOPER EXPERIENCE PRIORITY**: Always include foundational development infrastructure that enables team velocity. Even if it requires upfront investment, prioritize development workflow improvements that accelerate all subsequent work (containerization, dev environments, tooling setup, etc.).
+
 ## Task description and rules
 
 You are tasked with creating focused development tasks for the next available user story from the prioritized user stories located at .claude/likha-vibe-coding/prod-dev/user-story-priorities.md.
@@ -70,6 +74,20 @@ Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/user-
    - Do NOT specify HOW to implement (no implementation details)
    - Do NOT attempt to write code or create actual implementations
    - Create task specifications, not task solutions
+   
+   MVP DELIVERY APPROACH:
+   - Prioritize delivery speed over comprehensive best practice implementation
+   - Use best practices selectively - only essential patterns for user story success
+   - Defer advanced patterns (complex caching, extensive monitoring, perfect accessibility) to future iterations
+   - Focus on "good enough" solutions that meet acceptance criteria and can be improved later
+   - Choose simple, proven approaches over cutting-edge or complex implementations
+   
+   DEVELOPER EXPERIENCE REQUIREMENTS:
+   - ALWAYS include containerization (Docker) for environment reproducibility as foundational requirement
+   - ALWAYS include development environment setup that enables consistent team workflows
+   - ALWAYS consider tooling and infrastructure that accelerates development velocity
+   - Treat development workflow improvements as critical path items, not optional enhancements
+   - Prioritize foundational development infrastructure even if it requires upfront time investment
    ```
 
 4. **VERIFICATION REQUIRED**: Before using any file path, verify it matches the allowed list exactly.
@@ -108,8 +126,10 @@ When executing the task with subagents follow this workflow:
 
    - Analyze the user story requirements and success criteria
    - Break down into logical development phases (what deliverables are needed)
-   - Define task dependencies and critical path
+   - **CRITICAL**: Identify foundational development infrastructure needs (containerization, dev environments, tooling)
+   - Define task dependencies and critical path with developer experience as foundational priority
    - Establish acceptance criteria for each task deliverable
+   - Ensure development workflow improvements are prioritized even if they require upfront time investment
 
 3. **Backend Agent - Backend Task Breakdown**
 
@@ -127,10 +147,12 @@ When executing the task with subagents follow this workflow:
 
 5. **Infrastructure Agent - Infrastructure Task Breakdown**
 
-   - Identify what deployment and infrastructure deliverables are needed
+   - **PRIORITY 1**: Identify development environment deliverables (Docker containers, dev database setup, local tooling)
+   - **PRIORITY 2**: Identify what deployment and infrastructure deliverables are needed
    - Define what monitoring, logging, and observability deliverables are required
    - Specify what configuration and environment deliverables need to be created
    - Identify what scalability and performance deliverables are needed
+   - **CRITICAL**: Always include containerization and environment reproducibility as foundational requirements
 
 6. **Designer Agent - Design Task Breakdown**
 
@@ -154,6 +176,7 @@ Use the following structure for each identified task:
 - **Task ID**: Unique identifier (e.g., US-001-T001)
 - **Title**: Clear, actionable task description
 - **Owner**: Primary responsible team (Backend/Frontend/Infrastructure/Design)
+- **Status**: pending (default for new tasks)
 - **Priority**: Critical/High/Medium/Low within user story scope
 - **Estimated Effort**: Time estimate in hours/days
 - **Dependencies**: List of prerequisite tasks
@@ -162,7 +185,11 @@ Use the following structure for each identified task:
 
 **Task Categories:**
 
-- **Setup Tasks**: Environment, tooling, and infrastructure preparation
+- **Setup Tasks**: Environment, tooling, and infrastructure preparation (**ALWAYS INCLUDE - FOUNDATIONAL PRIORITY**)
+  - Docker containerization for development and production
+  - Development environment reproducibility
+  - Local database setup and tooling
+  - Development workflow automation
 - **Core Implementation**: Primary feature development
 - **Integration Tasks**: API integration, data flow, component connections
 - **Testing Tasks**: Unit tests, integration tests, user acceptance testing
@@ -215,6 +242,18 @@ After generating the task breakdown, confirm:
 - Tasks are specific, actionable, and measurable
 - Dependencies and timeline are realistic
 - No other task files were created in different locations
+
+### Developer Experience Considerations
+
+**Consider including these foundational development infrastructure tasks when they would accelerate team velocity:**
+
+- **Docker development environment**: Container setup for local development consistency
+- **Environment reproducibility**: Setup that works identically across all team members  
+- **Development tooling**: Hot reload, debugging, and workflow automation where beneficial
+- **Local database setup**: Containerized database when complex multi-tenant setup is needed
+- **CI/CD foundation**: Basic pipeline supporting the development workflow
+
+**Guideline**: Invest in developer experience improvements early if they prevent repeated setup friction or enable faster iteration cycles throughout the project.
 
 ### Guidelines
 
