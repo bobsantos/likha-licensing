@@ -102,11 +102,11 @@ Use the following evaluation criteria:
 - Customer onboarding enablement
 - Revenue protection/generation potential
 
-**Technical Foundation (Backend/Infra Lead)**
+**Technical Foundation (Backend/Frontend/Infra Lead)**
 - Foundational vs. incremental functionality
 - Technical debt implications
 - Reusability for future stories
-- Infrastructure stability requirements
+- Infrastructure and frontend architecture stability requirements
 
 **Implementation Risk (All Agents)**
 - Complexity score (1-5 scale)
