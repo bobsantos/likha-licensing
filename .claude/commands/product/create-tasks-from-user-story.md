@@ -10,11 +10,15 @@ You only need to generate the focused task breakdown and nothing else. Do not im
 
 ## Task description and rules
 
-You are tasked with creating focused development tasks for user story ID: $ARGUMENTS from the prioritized user stories located at .claude/likha-vibe-coding/prod-dev/user-story-priorities.md.
+You are tasked with creating focused development tasks for the next available user story from the prioritized user stories located at .claude/likha-vibe-coding/prod-dev/user-story-priorities.md.
+
+The system will automatically identify the next user story to work on by checking the Implementation Sequence Recommendations section and finding the first story with status "pending" (skipping any stories marked as "done", "cancelled", "closed", or "in_progress").
 
 ### CRITICAL OUTPUT REQUIREMENT
 
-The focused task breakdown MUST be generated at: .claude/likha-vibe-coding/prod-dev/user-story-$ARGUMENTS-tasks.md
+The focused task breakdown MUST be generated at: .claude/likha-vibe-coding/prod-dev/user-story-[NEXT_STORY_ID]-tasks.md
+
+Where [NEXT_STORY_ID] is the automatically identified next story ID (e.g., US-001, US-002, etc.)
 
 Do NOT create the tasks file in:
 
@@ -22,7 +26,7 @@ Do NOT create the tasks file in:
 - root directory
 - any other location
 
-Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/user-story-$ARGUMENTS-tasks.md
+Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/user-story-[NEXT_STORY_ID]-tasks.md
 
 **IMPORTANT**: Use `.claude/` (with dot prefix) NOT `@.claude/` to reference the existing .claude directory in the repository.
 
@@ -79,9 +83,13 @@ Before launching any subagents, the main agent MUST:
 
 When executing the task with subagents follow this workflow:
 
-1. **Locate Target User Story**
-   - Find the specific user story with ID $ARGUMENTS in the prioritized user stories document
-   - Extract all relevant details, priorities, and implementation notes
+1. **Auto-Identify Next User Story**
+   - Read the Implementation Sequence Recommendations section in the prioritized user stories document
+   - First, check if any story has **Status**: in_progress
+   - If an in_progress story exists, STOP and report: "Cannot create new tasks - Story [ID] is currently in progress. Complete it first."
+   - If no stories are in_progress, scan through all user stories in their documented sequence order
+   - Find the first story with **Status**: pending (skip stories marked as "done", "cancelled", or "closed")
+   - Extract all relevant details, priorities, and implementation notes for the identified story
 
 2. **PM Agent (Lead) - Task Planning Strategy**
    - Analyze the user story requirements and success criteria
@@ -176,8 +184,8 @@ The generated task breakdown should include:
 ### Validation Requirements
 
 After generating the task breakdown, confirm:
-- The file was created at .claude/likha-vibe-coding/prod-dev/user-story-$ARGUMENTS-tasks.md
-- The target user story was correctly identified and analyzed
+- The file was created at .claude/likha-vibe-coding/prod-dev/user-story-[NEXT_STORY_ID]-tasks.md
+- The next available user story was correctly identified and analyzed
 - All necessary implementation aspects are covered
 - Tasks are specific, actionable, and measurable
 - Dependencies and timeline are realistic
