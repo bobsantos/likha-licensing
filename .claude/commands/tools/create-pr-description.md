@@ -31,12 +31,16 @@ When executing the task follow this workflow:
 - Only use the context of the current session.
 - Do not access any files or directories.
 - **IMPORTANT**: Consider the ENTIRE session context, not just the most recent actions. Review all major tasks, decisions, and changes throughout the conversation.
-- **COMPLETENESS CHECK**: Before writing the PR description, mentally review the session chronologically to ensure no significant work is missed, including:
-  - Files created, modified, or deleted (even if created in wrong locations initially)
-  - Problem discovery and resolution (like path reference bugs)
-  - Multi-step processes and their outcomes
-  - Error corrections and improvements made
-- **QUALITY CONTROL**: Ensure the Changes section captures ALL substantial work, not just the final fixes
+- **COMPLETENESS CHECK**: Before writing the PR description, perform a systematic session review:
+  1. **Initial User Request**: What was the primary goal or task requested?
+  2. **Major Deliverables**: List all new files created, existing files modified, or commands built
+  3. **Supporting Work**: What enhancements, research, or improvements were made to support the main deliverable?
+  4. **Problem Resolution**: Any issues discovered and resolved during implementation
+  5. **Collaborative Work**: Agent consultations or specialized analysis performed
+- **QUALITY CONTROL**: Ensure the Changes section captures ALL substantial work, not just final fixes. Prioritize by impact:
+  - **Primary deliverables** (new features, commands, major implementations) should be listed first
+  - **Supporting enhancements** (documentation updates, tech stack improvements) second  
+  - **Process improvements** (fixes, optimizations) last
 - Follow this exact markdown format:
   <pr-desc-format>
 

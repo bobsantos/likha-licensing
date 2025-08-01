@@ -161,6 +161,7 @@ The generated analysis should include:
 
 3. **Implementation Sequence Recommendations**
    - Suggested sprint/phase groupings
+   - Each user story must include **Status**: pending (default for new stories)
    - Dependency mapping
    - Risk mitigation strategies
 
