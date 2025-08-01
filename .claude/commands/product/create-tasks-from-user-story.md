@@ -22,9 +22,9 @@ The system will automatically identify the next user story to work on by checkin
 
 ### CRITICAL OUTPUT REQUIREMENT
 
-The focused task breakdown MUST be generated at: .claude/likha-vibe-coding/prod-dev/user-story-[NEXT_STORY_ID]-tasks.md
+**CRITICAL SAFETY CHECK**: Before creating any files, you MUST verify that NO user story has **Status**: in_progress. If any story is in_progress, STOP immediately without creating or modifying tasks.md.
 
-Where [NEXT_STORY_ID] is the automatically identified next story ID (e.g., US-001, US-002, etc.)
+The focused task breakdown MUST be generated at: .claude/likha-vibe-coding/prod-dev/tasks.md
 
 Do NOT create the tasks file in:
 
@@ -32,7 +32,7 @@ Do NOT create the tasks file in:
 - root directory
 - any other location
 
-Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/user-story-[NEXT_STORY_ID]-tasks.md
+Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/tasks.md
 
 **IMPORTANT**: Use `.claude/` (with dot prefix) NOT `@.claude/` to reference the existing .claude directory in the repository.
 
@@ -117,7 +117,12 @@ When executing the task with subagents follow this workflow:
 
    - Read the Implementation Sequence Recommendations section in the prioritized user stories document
    - First, check if any story has **Status**: in_progress
-   - If an in_progress story exists, STOP and report: "Cannot create new tasks - Story [ID] is currently in progress. Complete it first."
+   - If an in_progress story exists:
+     - STOP immediately without creating or modifying any files
+     - Do NOT read or write tasks.md
+     - Do NOT proceed to any subsequent steps
+     - Report: "Cannot create new tasks - Story [ID] is currently in progress. Complete it first before creating new tasks."
+     - Exit the workflow completely
    - If no stories are in_progress, scan through all user stories in their documented sequence order
    - Find the first story with **Status**: pending (skip stories marked as "done", "cancelled", or "closed")
    - Extract all relevant details, priorities, and implementation notes for the identified story
@@ -236,7 +241,7 @@ The generated task breakdown should include:
 
 After generating the task breakdown, confirm:
 
-- The file was created at .claude/likha-vibe-coding/prod-dev/user-story-[NEXT_STORY_ID]-tasks.md
+- The file was created at .claude/likha-vibe-coding/prod-dev/tasks.md
 - The next available user story was correctly identified and analyzed
 - All necessary implementation aspects are covered
 - Tasks are specific, actionable, and measurable
