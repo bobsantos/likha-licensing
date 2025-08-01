@@ -43,6 +43,8 @@ Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/user-
 - .claude/likha-vibe-coding/prod-dev/user-story-priorities.md (source prioritized user stories)
 - .claude/likha-vibe-coding/templates/\* (all files in templates directory)
 - .claude/likha-vibe-coding/data/\* (all files in data directory)
+- .claude/likha-vibe-coding/templates/\* (all files in templates directory)
+- .claude/likha-vibe-coding/data/\* (all files in data directory)
 
 **CRITICAL RESTRICTIONS:**
 
@@ -64,6 +66,7 @@ Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/user-
    CRITICAL FILE ACCESS RESTRICTIONS - MANDATORY COMPLIANCE:
    - ONLY access: .claude/likha-vibe-coding/prod-dev/user-story-priorities.md
    - ONLY access: .claude/likha-vibe-coding/templates/* files
+   - ONLY access: .claude/likha-vibe-coding/templates/* files
    - ONLY access: .claude/likha-vibe-coding/data/* files
    - FORBIDDEN: ANY other files or directories including docs/, src/, root directory, scratch/, .git/, etc.
    - BEFORE accessing ANY file, verify the path starts with one of the allowed directories above
@@ -74,14 +77,14 @@ Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/user-
    - Do NOT specify HOW to implement (no implementation details)
    - Do NOT attempt to write code or create actual implementations
    - Create task specifications, not task solutions
-   
+
    MVP DELIVERY APPROACH:
    - Prioritize delivery speed over comprehensive best practice implementation
    - Use best practices selectively - only essential patterns for user story success
    - Defer advanced patterns (complex caching, extensive monitoring, perfect accessibility) to future iterations
    - Focus on "good enough" solutions that meet acceptance criteria and can be improved later
    - Choose simple, proven approaches over cutting-edge or complex implementations
-   
+
    DEVELOPER EXPERIENCE REQUIREMENTS:
    - ALWAYS include containerization (Docker) for environment reproducibility as foundational requirement
    - ALWAYS include development environment setup that enables consistent team workflows
@@ -138,7 +141,17 @@ When executing the task with subagents follow this workflow:
    - Specify what database changes need to be delivered
    - Identify what security and validation deliverables are required
 
+   - Identify what backend deliverables are needed (APIs, services, data models)
+   - Define what endpoints and data structures need to be created
+   - Specify what database changes need to be delivered
+   - Identify what security and validation deliverables are required
+
 4. **Frontend Agent - Frontend Task Breakdown**
+
+   - Identify what UI/UX deliverables are needed (components, pages, flows)
+   - Define what component deliverables and data integration points are required
+   - Specify what user interaction deliverables need to be created
+   - Identify what frontend integration deliverables are needed
 
    - Identify what UI/UX deliverables are needed (components, pages, flows)
    - Define what component deliverables and data integration points are required
@@ -155,6 +168,11 @@ When executing the task with subagents follow this workflow:
    - **CRITICAL**: Always include containerization and environment reproducibility as foundational requirements
 
 6. **Designer Agent - Design Task Breakdown**
+
+   - Identify what design deliverables are needed (wireframes, mockups, specifications)
+   - Define what design artifacts and documentation need to be created
+   - Specify what accessibility and usability deliverables are required
+   - Identify what design system deliverables need to be produced
 
    - Identify what design deliverables are needed (wireframes, mockups, specifications)
    - Define what design artifacts and documentation need to be created
@@ -180,6 +198,8 @@ Use the following structure for each identified task:
 - **Priority**: Critical/High/Medium/Low within user story scope
 - **Estimated Effort**: Time estimate in hours/days
 - **Dependencies**: List of prerequisite tasks
+- **Acceptance Criteria**: Specific, measurable deliverable completion requirements
+- **Deliverable Notes**: What needs to be delivered (not how to implement it)
 - **Acceptance Criteria**: Specific, measurable deliverable completion requirements
 - **Deliverable Notes**: What needs to be delivered (not how to implement it)
 
@@ -213,6 +233,11 @@ The generated task breakdown should include:
    - Infrastructure Tasks (with deployment deliverable needs)
    - Design Tasks (with design deliverable requirements)
 
+   - Backend Tasks (with deliverable specifications)
+   - Frontend Tasks (with UI/UX deliverable requirements)
+   - Infrastructure Tasks (with deployment deliverable needs)
+   - Design Tasks (with design deliverable requirements)
+
 3. **Implementation Timeline**
 
    - Task sequence and dependencies
@@ -227,6 +252,11 @@ The generated task breakdown should include:
    - Definition of done checklist
 
 5. **Deliverable Specifications**
+   - API contract deliverables and data model deliverables
+   - UI component deliverables and design specifications
+   - Infrastructure deliverable requirements
+   - Security and compliance deliverables
+6. **Deliverable Specifications**
    - API contract deliverables and data model deliverables
    - UI component deliverables and design specifications
    - Infrastructure deliverable requirements
@@ -248,7 +278,7 @@ After generating the task breakdown, confirm:
 **Consider including these foundational development infrastructure tasks when they would accelerate team velocity:**
 
 - **Docker development environment**: Container setup for local development consistency
-- **Environment reproducibility**: Setup that works identically across all team members  
+- **Environment reproducibility**: Setup that works identically across all team members
 - **Development tooling**: Hot reload, debugging, and workflow automation where beneficial
 - **Local database setup**: Containerized database when complex multi-tenant setup is needed
 - **CI/CD foundation**: Basic pipeline supporting the development workflow
