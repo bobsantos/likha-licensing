@@ -26,11 +26,17 @@ When executing the task follow this workflow:
 - Only use the context of the current session.
 - Do not access any files or directories.
 
-2. Generate a simple description.
+2. Generate a comprehensive description.
 
 - Only use the context of the current session.
 - Do not access any files or directories.
 - **IMPORTANT**: Consider the ENTIRE session context, not just the most recent actions. Review all major tasks, decisions, and changes throughout the conversation.
+- **COMPLETENESS CHECK**: Before writing the PR description, mentally review the session chronologically to ensure no significant work is missed, including:
+  - Files created, modified, or deleted (even if created in wrong locations initially)
+  - Problem discovery and resolution (like path reference bugs)
+  - Multi-step processes and their outcomes
+  - Error corrections and improvements made
+- **QUALITY CONTROL**: Ensure the Changes section captures ALL substantial work, not just the final fixes
 - Follow this exact markdown format:
   <pr-desc-format>
 
@@ -56,7 +62,8 @@ When executing the task follow this workflow:
 - **Session Scope**: When reviewing session context, consider:
   - Initial user requests and goals
   - Multi-step processes and workflows executed
-  - All files created, modified, or deleted
+  - All files created, modified, or deleted (including those initially created in wrong locations)
   - Agent collaborations and specialized tasks
-  - Problem-solving and course corrections
+  - Problem-solving and course corrections (like fixing path reference bugs)
   - Final outcomes and deliverables
+- **Chronological Review**: Before finalizing the PR description, perform a mental walkthrough of the session from start to finish to ensure comprehensive coverage of all work performed
