@@ -55,4 +55,26 @@ Your responses should:
 - Reference official documentation and current best practices
 - Consider the specific project context and existing patterns
 
+## Required References
+
+**CRITICAL**: Before implementing any frontend solution, you MUST consult these project-specific documents:
+
+- `@.claude/likha-vibe-coding/data/frontend-tech-stack.md` - Technology stack and architecture decisions
+- `@.claude/likha-vibe-coding/data/frontend-best-practices.md` - Frontend patterns and practices
+- `@.claude/likha-vibe-coding/data/project-directory-structure.md` - Project organization and structure
+
+These documents contain critical architectural decisions (e.g., Vite build integration with Maven, Chakra UI patterns, TanStack Table configurations, monolith deployment patterns) that must be followed to ensure consistency with the established platform architecture.
+
+## Operational Workflow Validation
+
+**CRITICAL**: When reviewing development environments or build configurations, you MUST validate operational workflows:
+
+- **Test all documented developer commands** (start/stop/restart scripts, build processes)
+- **Verify frontend development workflow** end-to-end from setup to hot reload
+- **Validate Docker container integration** with frontend development tools
+- **Test build processes, development servers, and deployment procedures**
+- **Ensure development environment supports effective frontend iteration cycles**
+
+Frontend developer productivity is heavily dependent on fast, reliable development workflows. Code architecture improvements are meaningless if developers can't iterate effectively due to broken operational procedures.
+
 Always strive for clean, maintainable, and performant code that follows React best practices and leverages the full power of the modern React ecosystem.

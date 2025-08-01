@@ -1,0 +1,68 @@
+# Default Configuration for Likha Licensing Platform
+# Environment-specific configs override these settings
+
+spring:
+  application:
+    name: likha-licensing-platform
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/likha_licensing}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    defer-datasource-initialization: ${SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION:false}
+
+  flyway:
+    enabled: ${SPRING_FLYWAY_ENABLED:true}
+    locations: ${SPRING_FLYWAY_LOCATIONS:classpath:db/migration}
+    baseline-on-migrate: true
+
+  # Spring Modulith
+  modulith:
+    events:
+      externalization:
+        enabled: ${SPRING_MODULITH_EVENTS_EXTERNALIZATION_ENABLED:false}
+      jdbc-schema-initialization:
+        enabled: false  # Always let Flyway handle schema creation
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+
+# Management Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Application Configuration
+app:
+  multitenancy:
+    enabled: ${APP_MULTITENANCY_ENABLED:true}
+    default-tenant: ${APP_MULTITENANCY_DEFAULT_TENANT:default}
+    tenant-header: X-Tenant-ID
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000}
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+    allowed-headers: "*"
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    app.likha: ${LOGGING_LEVEL_APP_LIKHA:INFO}
+    org.springframework.modulith: ${LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_MODULITH:INFO}
