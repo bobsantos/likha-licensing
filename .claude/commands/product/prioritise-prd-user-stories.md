@@ -10,11 +10,11 @@ You only need to generate the prioritized user story analysis and recommendation
 
 ## Task description and rules
 
-You are tasked with analyzing and prioritizing the user stories from the PRD located at @.claude/likha-vibe-coding/prod-dev/prd.md based on $ARGUMENTS (if any specific criteria are provided).
+You are tasked with analyzing and prioritizing the user stories from the PRD located at .claude/likha-vibe-coding/prod-dev/prd.md based on $ARGUMENTS (if any specific criteria are provided).
 
 ### CRITICAL OUTPUT REQUIREMENT
 
-The prioritized user story analysis MUST be generated at: @.claude/likha-vibe-coding/prod-dev/user-story-priorities.md
+The prioritized user story analysis MUST be generated at: .claude/likha-vibe-coding/prod-dev/user-story-priorities.md
 
 Do NOT create the analysis file in:
 
@@ -22,15 +22,17 @@ Do NOT create the analysis file in:
 - root directory
 - any other location
 
-Use the Write tool with the EXACT path: @.claude/likha-vibe-coding/prod-dev/user-story-priorities.md
+Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/user-story-priorities.md
+
+**IMPORTANT**: Use `.claude/` (with dot prefix) NOT `@.claude/` to reference the existing .claude directory in the repository.
 
 ### RESTRICTED FILE ACCESS - MANDATORY COMPLIANCE
 
 **ALLOWED FILES AND DIRECTORIES ONLY:**
 
-- @.claude/likha-vibe-coding/prod-dev/prd.md (source PRD)
-- @.claude/likha-vibe-coding/templates/\* (all files in templates directory)
-- @.claude/likha-vibe-coding/data/\* (all files in data directory)
+- .claude/likha-vibe-coding/prod-dev/prd.md (source PRD)
+- .claude/likha-vibe-coding/templates/\* (all files in templates directory)
+- .claude/likha-vibe-coding/data/\* (all files in data directory)
 
 **CRITICAL RESTRICTIONS:**
 
@@ -45,11 +47,35 @@ Use the Write tool with the EXACT path: @.claude/likha-vibe-coding/prod-dev/user
 
 3. **SUBAGENT COMPLIANCE**: ALL subagents (pm, backend, frontend, infra, designer) MUST be explicitly instructed to only access the allowed files above. Any subagent that attempts to access forbidden files should be immediately stopped.
 
+   **SUBAGENT INSTRUCTION TEMPLATE**: Each subagent prompt MUST include this exact text:
+   ```
+   CRITICAL FILE ACCESS RESTRICTIONS - MANDATORY COMPLIANCE:
+   - ONLY access: .claude/likha-vibe-coding/prod-dev/prd.md
+   - ONLY access: .claude/likha-vibe-coding/templates/* files  
+   - ONLY access: .claude/likha-vibe-coding/data/* files
+   - FORBIDDEN: ANY other files or directories including docs/, src/, root directory, scratch/, .git/, etc.
+   - BEFORE accessing ANY file, verify the path starts with one of the allowed directories above
+   - VIOLATION CONSEQUENCE: Task termination and violation report
+   ```
+
 4. **VERIFICATION REQUIRED**: Before using any file path, verify it matches the allowed list exactly.
 
 **VIOLATION CONSEQUENCES**: If any file outside the allowed list is accessed, immediately stop the task and report the violation to the user.
 
+**MANDATORY PRE-EXECUTION VALIDATION**: Before launching any subagent, the main agent MUST:
+1. Explicitly state which files each subagent will access
+2. Verify each file path starts with one of the allowed directories
+3. Confirm no forbidden paths will be accessed
+4. Only proceed if all file paths are validated as allowed
+
 ### Workflow
+
+**STEP 0: MANDATORY FILE ACCESS VALIDATION**
+Before launching any subagents, the main agent MUST:
+1. List all files that will be accessed: .claude/likha-vibe-coding/prod-dev/prd.md
+2. Verify this path is in the allowed list
+3. Confirm no other files will be accessed
+4. State: "File access validation complete - only allowed files will be accessed"
 
 When executing the task with subagents follow this workflow:
 
@@ -89,7 +115,7 @@ When executing the task with subagents follow this workflow:
    - Generate final prioritized recommendations
 
 7. **Generate Final Analysis**
-   - Create comprehensive prioritization document at @.claude/likha-vibe-coding/prod-dev/user-story-priorities.md
+   - Create comprehensive prioritization document at .claude/likha-vibe-coding/prod-dev/user-story-priorities.md
    - Include prioritization rationale, implementation sequence recommendations, and risk mitigation strategies
 
 ### Prioritization Framework
@@ -148,7 +174,7 @@ The generated analysis should include:
 ### Validation Requirements
 
 After generating the analysis, confirm:
-- The file was created at @.claude/likha-vibe-coding/prod-dev/user-story-priorities.md
+- The file was created at .claude/likha-vibe-coding/prod-dev/user-story-priorities.md
 - All user stories from the PRD are included and evaluated
 - Prioritization rationale is clear and well-documented
 - Implementation sequence is logical and considers dependencies
