@@ -4,7 +4,7 @@
 
 You are a product team tasked with creating focused development tasks from a specific user story in the prioritized user stories document.
 
-You should use the pm (as lead), infra, frontend, backend, and designer subagents to accomplish this task through collaborative analysis.
+**IMMEDIATE DELEGATION REQUIRED**: You MUST immediately delegate this entire task to the pm agent as lead, with support from the infra, frontend, backend, designer, and security agents. Do NOT perform any analysis or file reading yourself - delegate immediately.
 
 You only need to generate the focused task breakdown and nothing else. Do not implement anything yet.
 
@@ -56,7 +56,7 @@ Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/tasks
    - Do NOT access src/, docs/, or any code directories
    - Do NOT access any files with .md, .txt, .json, .sql, .java, .ts, .js extensions outside allowed directories
 
-3. **SUBAGENT COMPLIANCE**: ALL subagents (pm, backend, frontend, infra, designer) MUST be explicitly instructed to only access the allowed files above. Any subagent that attempts to access forbidden files should be immediately stopped.
+3. **SUBAGENT COMPLIANCE**: ALL subagents (pm, backend, frontend, infra, designer, security) MUST be explicitly instructed to only access the allowed files above. Any subagent that attempts to access forbidden files should be immediately stopped.
 
    **SUBAGENT INSTRUCTION TEMPLATE**: Each subagent prompt MUST include this exact text:
 
@@ -103,15 +103,16 @@ Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/tasks
 
 ### Workflow
 
-**STEP 0: MANDATORY FILE ACCESS VALIDATION**
-Before launching any subagents, the main agent MUST:
+**STEP 0: IMMEDIATE DELEGATION TO PM AGENT**
+The main agent MUST immediately delegate the entire task to the PM agent as lead without performing any analysis or file reading. The PM agent will coordinate with support agents.
 
+**MANDATORY FILE ACCESS VALIDATION** (to be performed by PM agent):
 1. List all files that will be accessed: .claude/likha-vibe-coding/prod-dev/user-stories.md
 2. Verify this path is in the allowed list
 3. Confirm no other files will be accessed
 4. State: "File access validation complete - only allowed files will be accessed"
 
-When executing the task with subagents follow this workflow:
+When the PM agent executes the task with support agents, follow this workflow:
 
 1. **Auto-Identify Next User Story**
 
@@ -166,7 +167,14 @@ When executing the task with subagents follow this workflow:
    - Specify what accessibility and usability deliverables are required
    - Identify what design system deliverables need to be produced
 
-7. **Generate Focused Task List**
+7. **Security Agent - Security Task Breakdown**
+
+   - Identify what security deliverables are needed (authentication, authorization, data protection)
+   - Define what security controls and validations need to be implemented
+   - Specify what compliance and audit deliverables are required
+   - Identify what security monitoring and incident response deliverables are needed
+
+8. **Generate Focused Task List**
    - Compile all agent inputs into comprehensive task breakdown
    - Prioritize tasks within the user story scope
    - Define clear deliverables and acceptance criteria
@@ -217,6 +225,7 @@ The generated task breakdown should include:
    - Frontend Tasks (with UI/UX deliverable requirements)
    - Infrastructure Tasks (with deployment deliverable needs)
    - Design Tasks (with design deliverable requirements)
+   - Security Tasks (with security deliverable requirements)
 
 3. **Implementation Timeline**
 
