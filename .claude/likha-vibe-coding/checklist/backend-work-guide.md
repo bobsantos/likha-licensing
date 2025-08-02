@@ -8,8 +8,29 @@ This guide provides best practices and references for @agent-backend when workin
 - **Backend Tech Stack**: @.claude/likha-vibe-coding/data/backend-tech-stack.md
 - **Backend Best Practices**: @.claude/likha-vibe-coding/data/backend-best-practices.md
 - **Domain-Driven Design**: @.claude/likha-vibe-coding/data/ddd.md
+- **Flyway Migration Best Practices**: @.claude/likha-vibe-coding/data/flyway.md
 
 ## Backend Task Approach
+
+### MANDATORY Pre-Implementation Checklist
+Before writing ANY implementation code, you MUST complete these steps IN ORDER:
+- [ ] Read and understand the full task requirements from todo.md
+- [ ] **Search for existing functionality** - Use Glob and Grep tools to find:
+  - [ ] Similar classes, services, or configurations
+  - [ ] Existing database configurations or test setups
+  - [ ] Related Spring components or beans
+  - [ ] Any duplicate functionality that already exists
+- [ ] **Leverage existing code** - Extend or use existing implementations rather than creating new ones
+- [ ] Create a detailed todo list using TodoWrite tool with your implementation plan
+- [ ] Share your implementation plan with the user
+- [ ] Write failing tests first (TDD approach - Red phase)
+  - Write Spring Boot integration tests for APIs
+  - Write repository tests for database operations
+  - Write unit tests for business logic
+- [ ] Get user confirmation or wait 30 seconds for implicit approval
+- [ ] Only then proceed with implementation to make tests pass
+
+**CRITICAL**: If you skip any of these steps, the user will interrupt you and you'll need to start over.
 
 ### 1. Pre-Implementation Phase
 

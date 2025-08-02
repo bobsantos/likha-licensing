@@ -1,0 +1,64 @@
+# Test Configuration for Likha Licensing Platform
+# This configuration is used when @ActiveProfiles("test") is applied
+
+spring:
+  application:
+    name: likha-licensing-platform-test
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/likha_licensing
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    defer-datasource-initialization: false
+
+  # CRITICAL: Disable Flyway for tests to avoid migration conflicts
+  flyway:
+    enabled: false
+
+  # Spring Modulith
+  modulith:
+    events:
+      externalization:
+        enabled: false
+      jdbc-schema-initialization:
+        enabled: false
+
+# Server Configuration for Tests
+server:
+  port: 0  # Random port for tests
+
+# Management Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# Application Configuration for Tests
+app:
+  multitenancy:
+    enabled: true
+    default-tenant: test-tenant
+    tenant-header: X-Tenant-ID
+  cors:
+    allowed-origins: "*"
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+    allowed-headers: "*"
+
+# Logging Configuration for Tests
+logging:
+  level:
+    root: WARN
+    app.likha: INFO
+    org.springframework.modulith: WARN
+    org.springframework.boot: WARN
+    org.springframework.test: INFO
