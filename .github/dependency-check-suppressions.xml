@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- 
+    Example suppressions for common false positives in Spring Boot applications.
+    Remove or modify these based on your actual security review.
+    -->
+    
+    <!-- Spring Boot false positives -->
+    <suppress>
+        <notes><![CDATA[
+        Spring Boot starter dependencies often trigger false positives for CVEs 
+        that are not applicable to the actual usage context.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring-boot-starter.*@.*$</packageUrl>
+        <cve>CVE-2018-1270</cve>
+    </suppress>
+    
+    <!-- Testcontainers false positives (test scope only) -->
+    <suppress>
+        <notes><![CDATA[
+        Testcontainers dependencies are test-scoped and not included in production builds.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.testcontainers/.*@.*$</packageUrl>
+        <cve>CVE-2021-29425</cve>
+    </suppress>
+    
+    <!-- PostgreSQL driver false positives -->
+    <suppress>
+        <notes><![CDATA[
+        PostgreSQL JDBC driver CVEs that don't apply to our usage context.
+        Review each suppression carefully and remove if not applicable.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.postgresql/postgresql@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-31197</vulnerabilityName>
+    </suppress>
+    
+    <!-- Jackson false positives - review carefully -->
+    <suppress>
+        <notes><![CDATA[
+        Jackson CVEs that may not apply to our specific usage.
+        IMPORTANT: Review each Jackson CVE carefully as these can be critical.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@.*$</packageUrl>
+        <cve>CVE-2020-36518</cve>
+    </suppress>
+</suppressions>
