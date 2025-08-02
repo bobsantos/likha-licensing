@@ -71,7 +71,7 @@ jobs:
       - name: Initialize test database with Flyway migrations
         run: |
           echo "Initializing test database with schema and data..."
-          mvn flyway:migrate -Dfrontend.skip=true
+          mvn flyway:migrate -Pci -Dfrontend.skip=true
         working-directory: .
         env:
           SPRING_PROFILES_ACTIVE: ci
@@ -291,7 +291,7 @@ jobs:
       - name: Initialize test database with Flyway migrations
         run: |
           echo "Initializing test database with schema and data..."
-          mvn flyway:migrate -Dfrontend.skip=true
+          mvn flyway:migrate -Pci -Dfrontend.skip=true
         working-directory: .
         env:
           SPRING_PROFILES_ACTIVE: ci

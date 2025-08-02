@@ -131,6 +131,61 @@
 
     <build>
         <plugins>
+            <!-- Maven Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Surefire Plugin (Unit Tests) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/*IT.java</exclude>
+                        <exclude>**/*IntegrationTest.java</exclude>
+                    </excludes>
+                    <argLine>${surefireArgLine}</argLine>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Failsafe Plugin (Integration Tests) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <includes>
+                        <include>**/*IT.java</include>
+                        <include>**/*IntegrationTest.java</include>
+                    </includes>
+                    <argLine>${failsafeArgLine}</argLine>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -255,18 +310,69 @@ To initialize frontend, run from project root:
                 </executions>
             </plugin>
 
+            <!-- Flyway Database Migration Plugin -->
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>9.22.3</version>
+                <configuration>
+                    <!-- Default configuration for local development -->
+                    <url>jdbc:postgresql://localhost:5432/likha_licensing</url>
+                    <user>postgres</user>
+                    <password>postgres</password>
+                    <locations>
+                        <location>classpath:db/migration</location>
+                    </locations>
+                    <baselineOnMigrate>true</baselineOnMigrate>
+                    <validateOnMigrate>true</validateOnMigrate>
+                    <cleanDisabled>true</cleanDisabled>
+                    <schemas>
+                        <schema>public</schema>
+                    </schemas>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>migrate</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>42.7.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
             <!-- JaCoCo Code Coverage Plugin -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.11</version>
                 <executions>
-                    <!-- Prepare agent for test execution -->
+                    <!-- Prepare agent for unit tests -->
                     <execution>
                         <id>default-prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
+                        <configuration>
+                            <propertyName>surefireArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <!-- Prepare agent for integration tests -->
+                    <execution>
+                        <id>prepare-agent-integration</id>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>failsafeArgLine</propertyName>
+                        </configuration>
                     </execution>
                     <!-- Generate coverage report after tests run -->
                     <execution>
@@ -317,4 +423,60 @@ To initialize frontend, run from project root:
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- CI Environment Profile -->
+        <profile>
+            <id>ci</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.flywaydb</groupId>
+                        <artifactId>flyway-maven-plugin</artifactId>
+                        <configuration>
+                            <url>jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:likha_licensing}</url>
+                            <user>${POSTGRES_USER:postgres}</user>
+                            <password>${POSTGRES_PASSWORD:postgres}</password>
+                            <locations>
+                                <location>classpath:db/migration</location>
+                            </locations>
+                            <baselineOnMigrate>true</baselineOnMigrate>
+                            <validateOnMigrate>true</validateOnMigrate>
+                            <cleanDisabled>true</cleanDisabled>
+                            <schemas>
+                                <schema>public</schema>
+                            </schemas>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Test Environment Profile -->
+        <profile>
+            <id>test</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.flywaydb</groupId>
+                        <artifactId>flyway-maven-plugin</artifactId>
+                        <configuration>
+                            <url>jdbc:postgresql://localhost:5432/likha_licensing_test</url>
+                            <user>postgres</user>
+                            <password>postgres</password>
+                            <locations>
+                                <location>classpath:db/migration</location>
+                            </locations>
+                            <baselineOnMigrate>true</baselineOnMigrate>
+                            <validateOnMigrate>true</validateOnMigrate>
+                            <cleanDisabled>false</cleanDisabled>
+                            <schemas>
+                                <schema>public</schema>
+                            </schemas>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
