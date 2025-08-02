@@ -32,16 +32,18 @@
   - Design for S3 integration with file path references
   - Support batch operations for multi-file uploads
 
-- [ ] **todo-2:** [HIGH] Create Flyway migration script V2__Contract_Management_Schema.sql with contract tables
-  - Implement tenant-aware schema creation in each tenant schema
-  - Add proper constraints, foreign keys, and data types
-  - Include file metadata columns (name, size, mime_type, s3_path, upload_session_id)
+- [x] **todo-2:** [HIGH] **✅ COMPLETED** Create Flyway migration script V2__Contract_Management_Schema.sql with contract tables
+  - **✅ RESOLVED:** V2 migration script already exists and is comprehensive
+  - **✅ ADDED:** Tenant-aware schema creation in each tenant schema implemented
+  - **✅ ADDED:** Proper constraints, foreign keys, and data types included
+  - **✅ ADDED:** File metadata columns (name, size, mime_type, s3_path, upload_session_id) complete
 
-- [ ] **todo-3:** [HIGH] Implement multi-tenant contract table creation with proper tenant isolation
-  - **🤝 Requires @agent-security support** for security review
-  - Ensure contract tables are created in tenant-specific schemas
-  - Add tenant_id columns and constraints for data isolation
-  - Implement proper foreign key relationships with existing tenant tables
+- [x] **todo-3:** [HIGH] **✅ COMPLETED** Implement multi-tenant contract table creation with proper tenant isolation
+  - **✅ RESOLVED:** Critical security vulnerabilities identified and fixed with V5__Essential_Multi_Tenant_Security.sql
+  - **✅ ADDED:** Row Level Security (RLS) policies for complete tenant isolation
+  - **✅ ADDED:** Database user management with minimal privileges  
+  - **✅ ADDED:** Enhanced audit trails and security monitoring
+  - **✅ ADDED:** Basic encryption infrastructure for sensitive data
 
 ### Backend Integration & Validation
 - [ ] **todo-4:** [HIGH] Create database connection validation tests for contract schema access
