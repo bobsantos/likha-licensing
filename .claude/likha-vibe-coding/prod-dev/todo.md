@@ -24,7 +24,7 @@
 ## 🎯 High Priority Tasks (Start Immediately)
 
 ### Schema Design & Implementation
-- [ ] **todo-1:** [HIGH] Design contract management database schema with contract files table, batch upload sessions, and metadata tracking
+- [x] **todo-1:** [HIGH] Design contract management database schema with contract files table, batch upload sessions, and metadata tracking
   - Create contract tables supporting file path, size, type, upload timestamp, tenant isolation
   - Design for S3 integration with file path references
   - Support batch operations for multi-file uploads
