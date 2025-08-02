@@ -25,6 +25,7 @@ When executing the task follow this workflow:
 
 - Only use the context of the current session.
 - Do not access any files or directories.
+- **FOCUS ON MAIN TASK**: The title should reflect the PRIMARY work done, not minor adjustments or side tasks
 
 2. Generate a comprehensive description.
 
@@ -33,14 +34,19 @@ When executing the task follow this workflow:
 - **IMPORTANT**: Consider the ENTIRE session context, not just the most recent actions. Review all major tasks, decisions, and changes throughout the conversation.
 - **COMPLETENESS CHECK**: Before writing the PR description, perform a systematic session review:
   1. **Initial User Request**: What was the primary goal or task requested?
-  2. **Major Deliverables**: List all new files created, existing files modified, or commands built
-  3. **Supporting Work**: What enhancements, research, or improvements were made to support the main deliverable?
-  4. **Problem Resolution**: Any issues discovered and resolved during implementation
-  5. **Collaborative Work**: Agent consultations or specialized analysis performed
+  2. **Main Task Focus**: Identify the PRIMARY work done (e.g., if working on todos, what specific todo was completed?)
+  3. **Major Deliverables**: List all new files created, existing files modified, or commands built
+  4. **Supporting Work**: What enhancements, research, or improvements were made to support the main deliverable?
+  5. **Problem Resolution**: Any issues discovered and resolved during implementation
+  6. **Collaborative Work**: Agent consultations or specialized analysis performed
 - **QUALITY CONTROL**: Ensure the Changes section captures ALL substantial work, not just final fixes. Prioritize by impact:
   - **Primary deliverables** (new features, commands, major implementations) should be listed first
   - **Supporting enhancements** (documentation updates, tech stack improvements) second  
   - **Process improvements** (fixes, optimizations) last
+- **MAIN TASK EMPHASIS**: When using work-todo or similar task management commands:
+  - The PR title should reflect the specific todo completed (e.g., "Complete database schema design for contract management")
+  - The primary change should be about the todo task itself, not the command modifications
+  - Command updates should be listed as supporting changes, not the main focus
 - Follow this exact markdown format:
   <pr-desc-format>
 

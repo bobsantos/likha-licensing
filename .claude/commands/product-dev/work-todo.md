@@ -53,6 +53,7 @@ This command will:
   - Mark the todo item as completed `- [x]`
   - Update the todo file with completion status
   - Report completion back to user
+  - **STOP** - Do not proceed to the next todo item
 
 ## Example Flow
 
@@ -101,3 +102,4 @@ All work guides emphasize:
 - Task completion requires meeting the acceptance criteria
 - If blocked, the lead agent should report the blocker instead of marking incomplete
 - Follow the appropriate work guide for consistent implementation
+- **IMPORTANT**: Complete only ONE todo item per command execution - do not automatically proceed to the next todo
