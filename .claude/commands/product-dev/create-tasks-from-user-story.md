@@ -16,9 +16,9 @@ You only need to generate the focused task breakdown and nothing else. Do not im
 
 ## Task description and rules
 
-You are tasked with creating focused development tasks for the next available user story from the prioritized user stories located at .claude/likha-vibe-coding/prod-dev/user-story-priorities.md.
+You are tasked with creating focused development tasks for the next available user story from the prioritized user stories located at .claude/likha-vibe-coding/prod-dev/user-stories.md.
 
-The system will automatically identify the next user story to work on by checking the Implementation Sequence Recommendations section and finding the first story with status "pending" (skipping any stories marked as "done", "cancelled", "closed", or "in_progress").
+The system will automatically identify the next user story to work on by checking the Implementation Sequence Recommendations section and finding the first story with status "pending" (skipping any stories marked as "done", "cancelled", "closed", "deferred", or "in_progress").
 
 ### CRITICAL OUTPUT REQUIREMENT
 
@@ -40,7 +40,7 @@ Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/tasks
 
 **ALLOWED FILES AND DIRECTORIES ONLY:**
 
-- .claude/likha-vibe-coding/prod-dev/user-story-priorities.md (source prioritized user stories)
+- .claude/likha-vibe-coding/prod-dev/user-stories.md (source prioritized user stories)
 - .claude/likha-vibe-coding/templates/\* (all files in templates directory)
 - .claude/likha-vibe-coding/data/\* (all files in data directory)
 
@@ -62,7 +62,7 @@ Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/tasks
 
    ```
    CRITICAL FILE ACCESS RESTRICTIONS - MANDATORY COMPLIANCE:
-   - ONLY access: .claude/likha-vibe-coding/prod-dev/user-story-priorities.md
+   - ONLY access: .claude/likha-vibe-coding/prod-dev/user-stories.md
    - ONLY access: .claude/likha-vibe-coding/templates/* files
    - ONLY access: .claude/likha-vibe-coding/data/* files
    - FORBIDDEN: ANY other files or directories including docs/, src/, root directory, scratch/, .git/, etc.
@@ -106,7 +106,7 @@ Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/tasks
 **STEP 0: MANDATORY FILE ACCESS VALIDATION**
 Before launching any subagents, the main agent MUST:
 
-1. List all files that will be accessed: .claude/likha-vibe-coding/prod-dev/user-story-priorities.md
+1. List all files that will be accessed: .claude/likha-vibe-coding/prod-dev/user-stories.md
 2. Verify this path is in the allowed list
 3. Confirm no other files will be accessed
 4. State: "File access validation complete - only allowed files will be accessed"
