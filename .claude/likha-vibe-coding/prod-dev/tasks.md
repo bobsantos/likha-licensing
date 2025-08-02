@@ -35,7 +35,7 @@
 **CRITICAL: Start these first - foundational requirements**
 
 1. **CM-0001-T001: Docker Development Environment Setup**
-   - **Status**: pending
+   - **Status**: done
    - **Deliverable**: Complete containerized development environment
    - **Acceptance**: `docker-compose up` starts all services
    - **Estimate**: 1 day

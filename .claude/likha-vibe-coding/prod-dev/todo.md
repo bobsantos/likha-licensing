@@ -1,46 +1,176 @@
-# Current Todo List
+# Current Todo List - CM-0001-T002: Database Container Configuration
 
-## ✅ CM-0001-T001: Docker Development Environment Setup - COMPLETED
+**Task Owner:** @agent-infra (Lead)  
+**Supporting Teams:** @agent-backend, @agent-security  
+**Status:** In Planning → Ready for Implementation  
+**Dependencies:** CM-0001-T001 (✅ COMPLETED)  
+**Estimate:** 0.5 days  
+**Acceptance Criteria:** PostgreSQL container with contract management schema, accessible from backend service
 
-All tasks for CM-0001-T001 have been successfully completed by @agent-infra:
+## 🤝 Team Collaboration Requirements
 
-### Original Tasks Completed
-- **todo-1:** ✅ Delegate CM-0001-T001 to @agent-infra as lead with @agent-backend and @agent-security support
-- **todo-2:** ✅ Start with acceptance tests for Docker development environment (30/30 tests passing)
-- **todo-3:** ✅ Check existing code to see what already satisfies the requirements
-- **todo-4:** ✅ Coordinate backend service requirements with @agent-backend  
-- **todo-5:** ✅ Coordinate security configurations with @agent-security
-- **todo-6:** ✅ Implement gaps in Docker setup after testing existing code
+**@agent-backend support needed for:**
+- Spring Boot health check integration (todo-5, todo-6)
+- Database connection validation and CRUD testing (todo-4, todo-6)
+- Spring JDBC schema validation patterns (todo-10)
 
-### Implementation Tasks Completed
-- **todo-7:** ✅ Add MinIO S3 storage service to docker-compose.yml with ports 9000 (API) and 9001 (Console)
-- **todo-8:** ✅ Configure MinIO security with proper access keys and bucket creation
-- **todo-9:** ✅ Update backend service dependencies to include MinIO health checks
-- **todo-10:** ✅ Create .env file approach for development secrets management
-- **todo-11:** ✅ Add S3 environment variables for backend service integration
-- **todo-12:** ✅ Fix backend health check failures at `/actuator/health` endpoint
-- **todo-13:** ✅ Implement network isolation and container security hardening
-- **todo-14:** ✅ Create acceptance tests for complete Docker environment validation (49/49 tests passing)
-- **todo-15:** ✅ Update documentation for running the development environment
-
-## 🎉 Task Completion Summary
-
-**CM-0001-T001 Status:** COMPLETED
-- PostgreSQL database with multi-tenant support ✅
-- MinIO S3 storage for document management ✅  
-- Redis cache service ✅
-- Spring Boot backend with health checks ✅
-- Security configurations and secrets management ✅
-- 49/49 acceptance and runtime tests passing ✅
-- Complete documentation and developer setup ✅
-
-**Development Environment Ready:** 
-- Start with: `./scripts/dev-start.sh`
-- Backend API: http://localhost:8080
-- MinIO Console: http://localhost:9001
-- Database Tool: http://localhost:8081
-
-**Ready for Next Tasks:** The foundation infrastructure is now ready for development teams to begin their work on CM-0001.
+**@agent-security support needed for:**
+- Multi-tenant data isolation security review (todo-3, todo-10)
+- Database access control and security constraints (todo-3)
+- Schema security validation and compliance (todo-10)
 
 ---
-*Last updated: 2025-08-02 - CM-0001-T001 COMPLETED*
+
+## 🎯 High Priority Tasks (Start Immediately)
+
+### Schema Design & Implementation
+- [ ] **todo-1:** [HIGH] Design contract management database schema with contract files table, batch upload sessions, and metadata tracking
+  - Create contract tables supporting file path, size, type, upload timestamp, tenant isolation
+  - Design for S3 integration with file path references
+  - Support batch operations for multi-file uploads
+
+- [ ] **todo-2:** [HIGH] Create Flyway migration script V2__Contract_Management_Schema.sql with contract tables
+  - Implement tenant-aware schema creation in each tenant schema
+  - Add proper constraints, foreign keys, and data types
+  - Include file metadata columns (name, size, mime_type, s3_path, upload_session_id)
+
+- [ ] **todo-3:** [HIGH] Implement multi-tenant contract table creation with proper tenant isolation
+  - **🤝 Requires @agent-security support** for security review
+  - Ensure contract tables are created in tenant-specific schemas
+  - Add tenant_id columns and constraints for data isolation
+  - Implement proper foreign key relationships with existing tenant tables
+
+### Backend Integration & Validation
+- [ ] **todo-4:** [HIGH] Create database connection validation tests for contract schema access
+  - **🤝 Requires @agent-backend support** for Spring Boot integration
+  - Verify backend service can connect to contract tables
+  - Test schema accessibility across different tenant contexts
+  - Validate connection pooling with contract management operations
+
+- [ ] **todo-5:** [HIGH] Implement health check extensions for contract management schema
+  - **🤝 Requires @agent-backend support** for Spring Boot actuator integration
+  - Add contract table health checks to Spring Boot actuator
+  - Verify schema existence and accessibility
+  - Include in existing /actuator/health endpoint validation
+
+- [ ] **todo-6:** [HIGH] Verify database accessibility from backend service with contract operations
+  - **🤝 Requires @agent-backend support** for Spring JDBC testing
+  - Test basic CRUD operations on contract tables
+  - Validate tenant isolation works correctly for contract data
+  - Ensure connection stability and error handling
+
+---
+
+## 🔧 Medium Priority Tasks (After Core Implementation)
+
+### Database Optimization & Structure
+- [ ] **todo-7:** [MEDIUM] Add database indexes for contract query optimization (tenant_id, upload_date, file_type)
+  - Create indexes for common query patterns
+  - Optimize for contract search and filtering operations
+  - Support for future metadata queries
+
+- [ ] **todo-8:** [MEDIUM] Implement contract file metadata tracking with S3 path integration
+  - Store S3 object keys and bucket references
+  - Include file checksums for integrity verification
+  - Support for file status tracking (uploading, completed, failed)
+
+- [ ] **todo-9:** [MEDIUM] Create batch upload session tracking for multi-file upload support
+  - Design upload_sessions table for grouping related files
+  - Include session status and timestamp tracking
+  - Support for partial upload recovery
+
+### Testing & Validation
+- [ ] **todo-10:** [MEDIUM] Create contract schema validation queries and tests
+  - **🤝 Requires @agent-backend support** for Spring JDBC patterns
+  - **🤝 Requires @agent-security support** for security validation
+  - Implement automated schema validation
+  - Test constraint enforcement and data integrity
+  - Validate multi-tenant data isolation
+
+- [ ] **todo-11:** [MEDIUM] Test database schema with realistic contract data and file metadata
+  - Insert sample contract records for development
+  - Test file metadata storage patterns
+  - Validate tenant separation with sample data
+
+---
+
+## 📚 Low Priority Tasks (Documentation & Polish)
+
+### Documentation & Setup
+- [ ] **todo-12:** [LOW] Create database schema documentation for contract management tables
+  - Document table relationships and data flow
+  - Include schema evolution and migration notes
+  - Provide developer reference for contract data model
+
+- [ ] **todo-13:** [LOW] Add contract management database setup instructions to development docs
+  - Update existing development environment documentation
+  - Include contract schema setup steps
+  - Document testing and validation procedures
+
+- [ ] **todo-14:** [LOW] Insert sample contract test data for development and testing
+  - Create realistic test data for development
+  - Include various file types and sizes
+  - Support for testing multi-tenant scenarios
+
+---
+
+## 🏁 Completion Criteria
+
+### ✅ Ready for Next Tasks When Complete:
+- [ ] Contract management schema implemented and accessible
+- [ ] Backend service can perform CRUD operations on contract tables
+- [ ] Multi-tenant isolation working correctly for contract data
+- [ ] Database health checks include contract schema validation
+- [ ] Migration scripts created and tested
+- [ ] Documentation updated with schema information
+
+### 🔗 Unblocks These Tasks:
+- **CM-0001-T010:** Database Schema for Contract Storage (backend)
+- **CM-0001-T011:** File Upload API Endpoint (backend)
+- **CM-0001-T013:** File Storage Service (backend)
+
+---
+
+## 🛠 Technical Implementation Notes
+
+### Database Schema Structure:
+```sql
+-- Contract files table (per tenant schema)
+contracts (
+  id UUID PRIMARY KEY,
+  tenant_id UUID NOT NULL,
+  filename VARCHAR(255) NOT NULL,
+  original_filename VARCHAR(255),
+  file_size BIGINT,
+  mime_type VARCHAR(100),
+  s3_bucket VARCHAR(100),
+  s3_key VARCHAR(500),
+  checksum VARCHAR(64),
+  upload_session_id UUID,
+  status VARCHAR(50),
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+)
+
+-- Upload sessions table (per tenant schema)
+upload_sessions (
+  id UUID PRIMARY KEY,
+  tenant_id UUID NOT NULL,
+  status VARCHAR(50),
+  total_files INTEGER,
+  completed_files INTEGER,
+  created_at TIMESTAMP,
+  completed_at TIMESTAMP
+)
+```
+
+### Key Integration Points:
+- **S3 Integration:** File paths and metadata for MinIO/S3 storage
+- **Multi-tenant:** Proper tenant isolation for contract data
+- **Spring Boot:** Health checks and connection validation
+- **Future APIs:** Schema ready for file upload and management endpoints
+
+---
+
+*Task CM-0001-T002 planned and ready for implementation by @agent-infra*  
+*Last updated: 2025-08-02 - Ready to begin implementation*

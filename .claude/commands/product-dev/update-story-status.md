@@ -2,7 +2,7 @@
 
 ## Task context
 
-You are tasked with updating the status of a specific user story in the user-story-priorities.md file.
+You are tasked with updating the status of a specific user story in the user-stories.md file.
 
 ## Task description and rules
 
@@ -17,7 +17,7 @@ The user will provide input in the format: `userstoryID:status`
 
 **ALLOWED FILES AND DIRECTORIES ONLY:**
 
-- `.claude/likha-vibe-coding/prod-dev/user-story-priorities.md` (user story priorities file)
+- `.claude/likha-vibe-coding/prod-dev/user-stories.md` (user story priorities file)
 
 **CRITICAL RESTRICTIONS:**
 
@@ -40,7 +40,7 @@ The user will provide input in the format: `userstoryID:status`
    - Validate format is `userstoryID:status`
    - Validate status is one of: pending, in_progress, blocked, cancelled, closed, done
 
-2. **Read the user story file** at `.claude/likha-vibe-coding/prod-dev/user-story-priorities.md`
+2. **Read the user story file** at `.claude/likha-vibe-coding/prod-dev/user-stories.md`
 
    - ONLY access this specific file path
    - Do NOT access any other files

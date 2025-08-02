@@ -77,7 +77,7 @@ This analysis prioritizes 12 user stories from the Contract Management MVP PRD t
    - **Rationale**: Essential technical foundation for all other features
    - **Technical Dependencies**: File storage system, database schema, upload API
    - **Agent Assignment**: @agent-backend (API), @agent-frontend (UI)
-   - **Status**: pending
+   - **Status**: in_progress
 
 2. **CM-0002: Add metadata to uploaded contracts**  
    - **Priority**: P0
