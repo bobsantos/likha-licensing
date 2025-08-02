@@ -2,6 +2,7 @@ settings.local.json
 scratch/
 
 # Environment Configuration
+.env
 .env.local
 .env.production
 

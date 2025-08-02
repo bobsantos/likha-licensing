@@ -51,7 +51,7 @@ fi
 
 echo -e "${YELLOW}🧹 Cleaning up any existing containers...${NC}"
 # Remove any existing containers with the same names to prevent conflicts
-docker rm -f likha-app likha-postgres likha-redis likha-adminer 2>/dev/null || true
+docker rm -f likha-app likha-postgres likha-redis likha-minio likha-minio-init likha-adminer 2>/dev/null || true
 $COMPOSE_CMD --profile tools down --remove-orphans --timeout 10
 
 echo -e "${YELLOW}📦 Building application container...${NC}"
@@ -68,6 +68,7 @@ echo -e "   🌐 Application: http://localhost:8080"
 echo -e "   🗄️  Database: localhost:5432 (postgres/postgres)"
 echo -e "   🛠️  Adminer: http://localhost:8081"
 echo -e "   📊 Redis: localhost:6379"
+echo -e "   🗂️  MinIO S3: http://localhost:9000 (API), http://localhost:9001 (Console)"
 echo ""
 echo -e "${BLUE}📋 Useful Commands:${NC}"
 echo -e "   View logs: ${COMPOSE_CMD} logs -f"
@@ -170,6 +171,13 @@ if ! wait_for_service "redis" "$COMPOSE_CMD exec -T redis redis-cli ping | grep 
     exit 1
 fi
 
+# 2.1. Wait for MinIO
+if ! wait_for_service "minio" "curl -s --max-time 5 http://localhost:9000/minio/health/live > /dev/null" 60 2 "MinIO S3 storage"; then
+    echo -e "${RED}❌ MinIO startup failed${NC}"
+    echo -e "${YELLOW}💡 Try: $COMPOSE_CMD logs minio${NC}"
+    exit 1
+fi
+
 # 2.5. Wait for Adminer
 if ! wait_for_service "adminer" "curl -s --max-time 5 http://localhost:8081 > /dev/null" 30 2 "Adminer database manager"; then
     echo -e "${RED}❌ Adminer startup failed${NC}"
@@ -265,6 +273,15 @@ else
     echo -e " ${YELLOW}⚠️  (readiness probe not available)${NC}"
 fi
 
+# Check MinIO availability
+echo -n "🗂️  MinIO S3 availability"
+if curl -s --max-time 5 http://localhost:9000/minio/health/live > /dev/null 2>&1; then
+    echo -e " ${GREEN}✅${NC}"
+else
+    echo -e " ${RED}❌${NC}"
+    services_healthy=false
+fi
+
 # Check Adminer availability
 echo -n "🛠️  Adminer availability"
 if curl -s --max-time 5 http://localhost:8081 > /dev/null 2>&1; then
@@ -288,6 +305,7 @@ echo -e "${BLUE}📍 Available Services:${NC}"
 echo -e "   🌐 Application: http://localhost:8080 (Status: ${GREEN}Healthy${NC})"
 echo -e "   🗄️  PostgreSQL: localhost:5432 (Status: ${GREEN}Connected${NC})"
 echo -e "   📊 Redis: localhost:6379 (Status: ${GREEN}Connected${NC})"
+echo -e "   🗂️  MinIO S3: http://localhost:9000 (Status: ${GREEN}Running${NC})"
 echo -e "   🛠️  Adminer: http://localhost:8081 (Status: ${GREEN}Available${NC})"
 echo ""
 echo -e "${BLUE}📋 Useful Commands:${NC}"

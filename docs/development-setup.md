@@ -9,6 +9,7 @@ The Likha Licensing Platform is built as a **monolith application** using Spring
 - **Backend**: Spring Boot 3.2+ with Spring Modulith (Java 21)
 - **Frontend**: React 18+ with TypeScript and Vite (built and served by Spring Boot)
 - **Database**: PostgreSQL 15+ with schema-per-tenant multi-tenancy
+- **Storage**: MinIO S3-compatible object storage for document management
 - **Caching**: Redis (optional but recommended)
 - **Package Structure**: `app.likha.*` 
 
@@ -36,6 +37,7 @@ Before setting up the development environment, ensure you have:
 3. **Access the application**:
    - Application: http://localhost:8080
    - Database: localhost:5432 (postgres/postgres)
+   - MinIO Console: http://localhost:9001 (minioadmin/minioadmin123)
    - Adminer: http://localhost:8081 (optional, use `--profile tools`)
 
 ## Detailed Setup Instructions
@@ -52,6 +54,9 @@ cp .env.example .env
 
 Key configuration options:
 - `POSTGRES_PASSWORD`: Database password (default: postgres)
+- `MINIO_ROOT_USER`: MinIO admin username (default: minioadmin)
+- `MINIO_ROOT_PASSWORD`: MinIO admin password (default: minioadmin123)
+- `MINIO_DEFAULT_BUCKETS`: Default S3 bucket name (default: likha-licensing-docs)
 - `JWT_SECRET`: JWT signing secret (change for production)
 - `SPRING_PROFILES_ACTIVE`: Spring profile (default: dev)
 
@@ -63,6 +68,7 @@ The development environment includes the following services:
 |---------|------|---------|
 | `app` | 8080 | Spring Boot application (includes frontend) |
 | `postgres` | 5432 | PostgreSQL database |
+| `minio` | 9000, 9001 | MinIO S3 storage (API & Console) |
 | `redis` | 6379 | Redis cache (optional) |
 | `adminer` | 8081 | Database administration tool |
 
@@ -100,6 +106,15 @@ The application uses **schema-per-tenant** multi-tenancy:
 - **Shared tables**: `public.tenants`, `public.users`
 - **Tenant schemas**: `tenant_default`, `tenant_001`, `tenant_002`, etc.
 - **Migration management**: Flyway handles database schema migrations
+
+#### S3 Storage Management
+
+The application uses **MinIO S3-compatible storage** for document management:
+
+- **Default bucket**: `likha-licensing-docs` (created automatically)
+- **API endpoint**: http://localhost:9000 (for application access)
+- **Console access**: http://localhost:9001 (minioadmin/minioadmin123)
+- **Tenant isolation**: Documents are organized by tenant prefix in S3 keys
 
 ### 4. Development Scripts
 
