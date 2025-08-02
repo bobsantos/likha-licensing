@@ -7,7 +7,7 @@ This guide provides best practices and references for @agent-backend when workin
 - **Test-Driven Development**: @.claude/likha-vibe-coding/data/tdd.md
 - **Backend Tech Stack**: @.claude/likha-vibe-coding/data/backend-tech-stack.md
 - **Backend Best Practices**: @.claude/likha-vibe-coding/data/backend-best-practices.md
-- **Domain-Driven Design**: @.claude/likha-vibe-coding/checklist/ddd-checklist.md
+- **Domain-Driven Design**: @.claude/likha-vibe-coding/data/ddd.md
 
 ## Backend Task Approach
 

@@ -8,6 +8,7 @@ This guide provides best practices and references for @agent-frontend when worki
 - **Frontend Tech Stack**: @.claude/likha-vibe-coding/data/frontend-tech-stack.md
 - **Frontend Best Practices**: @.claude/likha-vibe-coding/data/frontend-best-practices.md
 - **Design Best Practices**: @.claude/likha-vibe-coding/data/design-best-practices.md
+- **Domain-Driven Design**: @.claude/likha-vibe-coding/data/ddd.md
 
 ## Frontend Task Approach
 
