@@ -191,7 +191,7 @@ docker-compose exec postgres psql -U postgres -c "SELECT * FROM pg_stat_activity
 ### Common Issues
 
 #### Port Conflicts
-If ports 8080, 5432, or 6379 are already in use:
+If ports 8080, 5432, 9000, 9001, or 6379 are already in use:
 1. Stop conflicting services
 2. Modify ports in `docker-compose.yaml`
 3. Update corresponding configuration
@@ -212,6 +212,18 @@ docker-compose exec postgres pg_isready -U postgres -d likha_licensing
 
 # Restart application container
 docker-compose restart app
+```
+
+#### MinIO Storage Issues
+```bash
+# Check MinIO logs
+./scripts/dev-logs.sh minio
+
+# Verify MinIO API connectivity
+curl -I http://localhost:9000/minio/health/live
+
+# Access MinIO Console
+# Navigate to http://localhost:9001 (minioadmin/minioadmin123)
 ```
 
 #### Frontend Build Issues
