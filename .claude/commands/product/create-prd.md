@@ -4,7 +4,11 @@
 
 You are a product team for a brand licensing platform trying to create a product requirements document (PRD). Your goal is to create a PRD with clear requirements, user stories, and acceptance criteria.
 
-You should use the pm, infra, and backend subagents if available to help you accomplish this task.
+**CRITICAL: IMMEDIATE DELEGATION REQUIRED**
+
+You MUST delegate this entire task to the pm agent immediately upon receiving this command. Do NOT perform any investigation, file reading, or analysis yourself. The pm agent will lead and collaborate with backend, frontend, infra, designer, and security agents as needed.
+
+Delegate with: "Create a comprehensive PRD for the brand licensing platform following the workflow and requirements specified in this command. You will lead this effort and collaborate with backend, frontend, infra, designer, and security agents as needed."
 
 You ONLY need to generate the PRD and nothing else.
 
@@ -13,12 +17,14 @@ DO NOT write specific implementations like code, sql, and configurations.
 DO NOT implement anything yet.
 
 IMPORTANT: A PRD defines WHAT needs to be built and WHY, not HOW to build it. Focus on:
+
 - Business requirements and user needs
 - Feature specifications and acceptance criteria
 - Performance targets and quality standards
 - High-level technology choices (e.g., "PostgreSQL 15+", "Spring Boot 3.2+")
 
 AVOID implementation details such as:
+
 - Code examples, class definitions, or method signatures
 - SQL table schemas or specific database queries
 - Configuration files (YAML, XML, JSON)
@@ -34,8 +40,9 @@ The Technical Specifications section should describe architecture approaches and
 The PRD MUST be generated at: .claude/likha-vibe-coding/prod-dev/prd.md
 
 Do NOT create the PRD file in:
+
 - scratch/ directory
-- root directory  
+- root directory
 - any other location
 
 Use the Write tool with the EXACT path: .claude/likha-vibe-coding/prod-dev/prd.md
@@ -66,6 +73,7 @@ While performing this task try to remind yourself and the subagents to prioritis
 1. **FORBIDDEN ACCESS**: You and ALL subagents are PROHIBITED from accessing any files or directories outside the allowed list above.
 
 2. **SPECIFICALLY FORBIDDEN:**
+
    - Do NOT access scratch/ directory or any files within it
    - Do NOT access root directory files
    - Do NOT access any other .claude/ subdirectories
@@ -90,17 +98,17 @@ When generating the PRD use this workflow step-by-step:
 
 3. Create these sections: Functional Requirements, Non-Functional Requirements, UX/UI Requirements.
 
-- Use pm (lead), backend, frontend, infra, and designer subagents for this step
+- Use pm (lead), backend, frontend, infra, security, and designer subagents for this step
 - pm subagent coordinates overall requirements, others provide domain expertise
 
 4. Create the Technical Specifications section.
 
-- Use backend (lead), frontend, infra subagents for this step
+- Use backend (lead), frontend, infra, security subagents for this step
 - Focus on technical architecture and implementation details
 
 5. Create these sections: Launch Criteria, Appendices.
 
-- Use pm (lead), backend, frontend, infra and designer subagents for this step
+- Use pm (lead), backend, frontend, infra, security, and designer subagents for this step
 - Collaborative effort for comprehensive launch planning
 
 6. Verify the output directory exists and confirm the target file path
@@ -111,12 +119,15 @@ When generating the PRD use this workflow step-by-step:
 
 7. Generate the final PRD file at .claude/likha-vibe-coding/prod-dev/prd.md
 
+8. Let the pm agent review the final PRD as sanity check
+
 CRITICAL: Use the Write tool to create the PRD file at the EXACT path: .claude/likha-vibe-coding/prod-dev/prd.md
 Do NOT create the file in any other location (not in scratch/ or any other directory).
 
 8. Validate PRD file creation
 
 After generating the PRD, confirm:
+
 - The file was created at .claude/likha-vibe-coding/prod-dev/prd.md
 - The file contains all required sections
 - No other PRD files were created in different locations
