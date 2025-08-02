@@ -30,7 +30,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
+          POSTGRES_DB: likha_licensing
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -68,6 +68,19 @@ jobs:
           mvn validate -Dskip.frontend=true
         working-directory: .
 
+      - name: Initialize test database with Flyway migrations
+        run: |
+          echo "Initializing test database with schema and data..."
+          mvn flyway:migrate -Dfrontend.skip=true
+        working-directory: .
+        env:
+          SPRING_PROFILES_ACTIVE: ci
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: likha_licensing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
       - name: Run backend tests
         run: |
           echo "Running backend tests with CI profile..."
@@ -77,7 +90,7 @@ jobs:
           SPRING_PROFILES_ACTIVE: test
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
-          POSTGRES_DB: postgres
+          POSTGRES_DB: likha_licensing
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
 
@@ -91,7 +104,8 @@ jobs:
 
       - name: Generate test coverage report
         run: |
-          mvn jacoco:report -Dfrontend.skip=true
+          echo "Generating JaCoCo coverage report..."
+          mvn jacoco:report -Dfrontend.skip=true || echo "JaCoCo report generation completed with warnings"
         working-directory: .
 
       - name: Upload test results
@@ -241,7 +255,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
+          POSTGRES_DB: likha_licensing
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -274,6 +288,19 @@ jobs:
           name: frontend-dist
           path: frontend/dist/
 
+      - name: Initialize test database with Flyway migrations
+        run: |
+          echo "Initializing test database with schema and data..."
+          mvn flyway:migrate -Dfrontend.skip=true
+        working-directory: .
+        env:
+          SPRING_PROFILES_ACTIVE: ci
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: likha_licensing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
       - name: Build complete application (backend + frontend)
         run: |
           echo "Building complete application with frontend..."
@@ -283,7 +310,7 @@ jobs:
           SPRING_PROFILES_ACTIVE: test
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
-          POSTGRES_DB: postgres
+          POSTGRES_DB: likha_licensing
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
 

@@ -1,9 +1,9 @@
-# Test Configuration for Likha Licensing Platform
-# This configuration is used when @ActiveProfiles("test") is applied
+# CI Configuration for Likha Licensing Platform
+# This configuration is used for GitHub Actions CI environment
 
 spring:
   application:
-    name: likha-licensing-platform-test
+    name: likha-licensing-platform-ci
 
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:likha_licensing}
@@ -20,9 +20,13 @@ spring:
     open-in-view: false
     defer-datasource-initialization: false
 
-  # CRITICAL: Disable Flyway for tests to avoid migration conflicts
+  # Enable Flyway for CI to create schema
   flyway:
-    enabled: false
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    validate-on-migrate: true
 
   # Spring Modulith
   modulith:
@@ -32,7 +36,7 @@ spring:
       jdbc-schema-initialization:
         enabled: false
 
-# Server Configuration for Tests
+# Server Configuration for CI
 server:
   port: 0  # Random port for tests
 
@@ -43,22 +47,22 @@ management:
       exposure:
         include: health,info
 
-# Application Configuration for Tests
+# Application Configuration for CI
 app:
   multitenancy:
     enabled: true
-    default-tenant: test-tenant
+    default-tenant: ci-tenant
     tenant-header: X-Tenant-ID
   cors:
     allowed-origins: "*"
     allowed-methods: GET,POST,PUT,DELETE,OPTIONS
     allowed-headers: "*"
 
-# Logging Configuration for Tests
+# Logging Configuration for CI
 logging:
   level:
     root: WARN
     app.likha: INFO
     org.springframework.modulith: WARN
     org.springframework.boot: WARN
-    org.springframework.test: INFO
+    org.flywaydb: INFO
