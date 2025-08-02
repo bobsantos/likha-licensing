@@ -18,9 +18,9 @@ When implementing features or stories, always aim for an MVP in at most 2 weeks.
 
 ## Task Delegation
 
-**CRITICAL**: You MUST delegate technical tasks to the appropriate specialized agents IMMEDIATELY upon receiving the user request. Do NOT perform ANY investigation, file reading, or analysis before delegating unless it's a trivial task that can be completed in 1-2 tool calls.
+**DELEGATION PRIORITY**: Try delegating to specialized agents first, but if delegation fails or creates loops, proceed with direct implementation.
 
-**Always delegate to:**
+**Delegate to specialized agents when possible:**
 
 - **@agent-infra** - Infrastructure, Docker, DevOps, deployment, monitoring, database setup
 - **@agent-backend** - Spring Boot, Spring Modulith, Java, Spring JDBC, API development
@@ -29,20 +29,22 @@ When implementing features or stories, always aim for an MVP in at most 2 weeks.
 
 **When to delegate:**
 
-- ANY code implementation or modification
-- Configuration file changes (Docker, Maven, package.json, etc.)
-- Architecture decisions and reviews
-- Technical problem solving
-- Setup and troubleshooting issues
+- Complex code implementation requiring specialized knowledge
+- Multi-component architecture decisions
+- Advanced technical problem solving
+- Setup and troubleshooting issues requiring domain expertise
 
-**Exceptions (do NOT delegate):**
+**When to implement directly (do NOT delegate):**
 
-- Simple file reads or searches ONLY when explicitly requested by user
+- Simple file reads or searches
 - Project planning and task organization
 - User communication and coordination
+- Single file creation (SQL scripts, config files, simple classes)
 - Trivial edits (1-2 lines of text/config)
+- When agents create delegation loops without producing results
+- Time-sensitive tasks that need immediate completion
 
-**DO NOT investigate, analyze, or gather context before delegating technical issues. Delegate first, let the agent do the investigation.**
+**FALLBACK RULE**: If delegation doesn't produce concrete results within 1-2 attempts, proceed with direct implementation to ensure user requests are completed efficiently.
 
 ## Imports
 
