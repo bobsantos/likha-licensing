@@ -9,6 +9,7 @@ This guide provides best practices and references for @agent-infra when working 
 - **Backend Tech Stack**: @.claude/likha-vibe-coding/data/backend-tech-stack.md
 - **Frontend Tech Stack**: @.claude/likha-vibe-coding/data/frontend-tech-stack.md
 - **Domain-Driven Design**: @.claude/likha-vibe-coding/data/ddd.md
+- **Domain Model Reference**: @docs/domain/domains.md
 
 ## Infrastructure Task Approach
 

@@ -34,6 +34,7 @@ This guide provides best practices and references for @agent-backend when workin
 - Apply dependency injection best practices
 
 **Domain-Driven Design**
+- **Reference**: @docs/domain/domains.md for bounded contexts, domain events, and architecture patterns
 - Identify and implement aggregate roots
 - Use value objects for immutable data
 - Keep domain logic in domain services

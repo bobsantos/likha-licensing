@@ -9,6 +9,7 @@ This guide provides best practices and references for @agent-frontend when worki
 - **Frontend Best Practices**: @.claude/likha-vibe-coding/data/frontend-best-practices.md
 - **Design Best Practices**: @.claude/likha-vibe-coding/data/design-best-practices.md
 - **Domain-Driven Design**: @.claude/likha-vibe-coding/data/ddd.md
+- **Domain Model Reference**: @docs/domain/domains.md
 
 ## Frontend Task Approach
 
