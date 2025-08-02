@@ -56,12 +56,12 @@ if [ "$CLEAN_VOLUMES" = true ]; then
     echo -e "${YELLOW}🛑 Force stopping all containers...${NC}"
     
     # Force stop containers by name (in case they're unresponsive)
-    docker stop likha-app likha-postgres likha-redis likha-adminer 2>/dev/null || true
-    docker kill likha-app likha-postgres likha-redis likha-adminer 2>/dev/null || true
+    docker stop likha-app likha-postgres likha-redis likha-minio likha-minio-init likha-adminer 2>/dev/null || true
+    docker kill likha-app likha-postgres likha-redis likha-minio likha-minio-init likha-adminer 2>/dev/null || true
     
     # Remove containers by name to ensure cleanup
     echo -e "${YELLOW}🗑️  Removing containers...${NC}"
-    docker rm -f likha-app likha-postgres likha-redis likha-adminer 2>/dev/null || true
+    docker rm -f likha-app likha-postgres likha-redis likha-minio likha-minio-init likha-adminer 2>/dev/null || true
     
     # Use compose down with volumes and remove orphans
     $COMPOSE_CMD down -v --remove-orphans --timeout 10
@@ -74,12 +74,14 @@ if [ "$CLEAN_VOLUMES" = true ]; then
     # Remove volumes with project prefix (new format)
     docker volume rm likha-licensing_postgres_data 2>/dev/null || true
     docker volume rm likha-licensing_redis_data 2>/dev/null || true
+    docker volume rm likha-licensing_minio_data 2>/dev/null || true
     docker volume rm likha-licensing_maven_cache 2>/dev/null || true
     docker volume rm likha-licensing_frontend_node_modules 2>/dev/null || true
     
     # Remove volumes with underscore prefix (legacy format)
     docker volume rm likha-licensing-postgres_data 2>/dev/null || true
     docker volume rm likha-licensing-redis_data 2>/dev/null || true
+    docker volume rm likha-licensing-minio_data 2>/dev/null || true
     docker volume rm likha-licensing-maven_cache 2>/dev/null || true
     docker volume rm likha-licensing-frontend_node_modules 2>/dev/null || true
     

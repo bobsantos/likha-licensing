@@ -186,15 +186,23 @@ Use the following structure for each identified task:
 
 **Task Structure:**
 
-- **Task ID**: Unique identifier (e.g., US-001-T001)
+- **Task ID**: Unique identifier following format [User Story ID]-T[Sequential Number] (e.g., CM-0001-T001, CM-0001-T002)
 - **Title**: Clear, actionable task description
 - **Owner**: Primary responsible team (Backend/Frontend/Infrastructure/Design)
-- **Status**: pending (default for new tasks)
+- **Status**: pending (default) | deferred | in_progress | cancelled | closed | done
 - **Priority**: Critical/High/Medium/Low within user story scope
 - **Estimated Effort**: Time estimate in hours/days
-- **Dependencies**: List of prerequisite tasks
+- **Dependencies**: List of prerequisite tasks by Task ID
 - **Acceptance Criteria**: Specific, measurable deliverable completion requirements
 - **Deliverable Notes**: What needs to be delivered (not how to implement it)
+
+**CRITICAL TASK ID REQUIREMENTS:**
+- Each task MUST have a unique Task ID using the format: [User Story ID]-T[Sequential Number]
+- Task IDs should be assigned sequentially within each team section
+- Example for user story CM-0001: CM-0001-T001, CM-0001-T002, CM-0001-T003, etc.
+- Infrastructure tasks start with T001, Designer tasks continue the sequence, Backend tasks continue, etc.
+- Use Task IDs when referencing dependencies between tasks
+- Task IDs enable precise tracking and reference throughout development
 
 **Task Categories:**
 

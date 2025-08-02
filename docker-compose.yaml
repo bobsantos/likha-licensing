@@ -68,6 +68,14 @@ services:
       # Multi-tenant Configuration
       APP_MULTITENANCY_ENABLED: true
       APP_MULTITENANCY_DEFAULT_TENANT: default
+      
+      # S3/MinIO Configuration
+      AWS_S3_ENDPOINT: http://minio:9000
+      AWS_S3_BUCKET_NAME: ${MINIO_DEFAULT_BUCKETS:-likha-licensing-docs}
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      AWS_S3_REGION: us-east-1
+      AWS_S3_PATH_STYLE_ACCESS: true
     ports:
       - "8080:8080"
       - "35729:35729" # LiveReload port
@@ -82,6 +90,8 @@ services:
       - frontend_node_modules:/app/frontend/node_modules
     depends_on:
       postgres:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     networks:
       - likha-network
@@ -109,6 +119,55 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # MinIO S3 Storage for document management
+  minio:
+    image: minio/minio:latest
+    container_name: likha-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    ports:
+      - "9000:9000"  # API port
+      - "9001:9001"  # Console port
+    volumes:
+      - minio_data:/data
+    networks:
+      - likha-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # MinIO Client for bucket initialization
+  minio-init:
+    image: minio/mc:latest
+    container_name: likha-minio-init
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_DEFAULT_BUCKETS: ${MINIO_DEFAULT_BUCKETS:-likha-licensing-docs}
+    entrypoint: |
+      sh -c "
+      echo 'Waiting for MinIO to start...'
+      while ! mc alias set localminio http://minio:9000 \$$MINIO_ROOT_USER \$$MINIO_ROOT_PASSWORD; do
+        sleep 2
+      done
+      echo 'MinIO is ready, creating bucket...'
+      mc mb localminio/\$$MINIO_DEFAULT_BUCKETS --ignore-existing
+      echo 'Setting bucket policy for development'
+      mc anonymous set public localminio/\$$MINIO_DEFAULT_BUCKETS
+      echo 'MinIO initialization completed'
+      "
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - likha-network
+    restart: "no"
+
   # Adminer for database management (development only)
   adminer:
     image: adminer:4.8.1
@@ -129,6 +188,8 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  minio_data:
     driver: local
   maven_cache:
     driver: local

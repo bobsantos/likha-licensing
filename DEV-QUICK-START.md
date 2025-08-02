@@ -14,12 +14,16 @@
 ## Access Points
 - **Application**: http://localhost:8080
 - **Database**: localhost:5432 (postgres/postgres)
+- **MinIO Console**: http://localhost:9001 (minioadmin/minioadmin123)
 - **Health Check**: http://localhost:8080/actuator/health
 
 ## Useful Commands
 ```bash
-# View logs
+# View logs (all services)
 ./scripts/dev-logs.sh
+
+# View specific service logs
+./scripts/dev-logs.sh minio
 
 # Database shell
 ./scripts/dev-db.sh shell
