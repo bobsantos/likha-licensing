@@ -243,40 +243,40 @@ CREATE TABLE IF NOT EXISTS tenant_default.contract_access_log (
 );
 
 -- Add foreign key constraints for tenant schema tables
-ALTER TABLE IF EXISTS tenant_default.upload_sessions 
-    ADD CONSTRAINT IF NOT EXISTS fk_upload_sessions_tenant 
+ALTER TABLE tenant_default.upload_sessions 
+    ADD CONSTRAINT fk_upload_sessions_tenant 
     FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
 
-ALTER TABLE IF EXISTS tenant_default.contracts 
-    ADD CONSTRAINT IF NOT EXISTS fk_contracts_tenant 
+ALTER TABLE tenant_default.contracts 
+    ADD CONSTRAINT fk_contracts_tenant 
     FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
 
-ALTER TABLE IF EXISTS tenant_default.contracts 
-    ADD CONSTRAINT IF NOT EXISTS fk_contracts_upload_session 
+ALTER TABLE tenant_default.contracts 
+    ADD CONSTRAINT fk_contracts_upload_session 
     FOREIGN KEY (upload_session_id) REFERENCES tenant_default.upload_sessions(id);
 
-ALTER TABLE IF EXISTS tenant_default.contracts 
-    ADD CONSTRAINT IF NOT EXISTS fk_contracts_created_by 
+ALTER TABLE tenant_default.contracts 
+    ADD CONSTRAINT fk_contracts_created_by 
     FOREIGN KEY (created_by_user_id) REFERENCES public.users(id);
 
-ALTER TABLE IF EXISTS tenant_default.contracts 
-    ADD CONSTRAINT IF NOT EXISTS fk_contracts_updated_by 
+ALTER TABLE tenant_default.contracts 
+    ADD CONSTRAINT fk_contracts_updated_by 
     FOREIGN KEY (updated_by_user_id) REFERENCES public.users(id);
 
-ALTER TABLE IF EXISTS tenant_default.contract_versions 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_versions_contract 
+ALTER TABLE tenant_default.contract_versions 
+    ADD CONSTRAINT fk_contract_versions_contract 
     FOREIGN KEY (contract_id) REFERENCES tenant_default.contracts(id) ON DELETE CASCADE;
 
-ALTER TABLE IF EXISTS tenant_default.contract_versions 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_versions_created_by 
+ALTER TABLE tenant_default.contract_versions 
+    ADD CONSTRAINT fk_contract_versions_created_by 
     FOREIGN KEY (created_by_user_id) REFERENCES public.users(id);
 
-ALTER TABLE IF EXISTS tenant_default.contract_access_log 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_access_contract 
+ALTER TABLE tenant_default.contract_access_log 
+    ADD CONSTRAINT fk_contract_access_contract 
     FOREIGN KEY (contract_id) REFERENCES tenant_default.contracts(id) ON DELETE CASCADE;
 
-ALTER TABLE IF EXISTS tenant_default.contract_access_log 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_access_user 
+ALTER TABLE tenant_default.contract_access_log 
+    ADD CONSTRAINT fk_contract_access_user 
     FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 -- ==============================================================================

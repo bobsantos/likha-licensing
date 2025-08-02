@@ -22,7 +22,9 @@ When implementing features or stories, always aim for an MVP in at most 2 weeks.
 
 **Delegate to specialized agents when possible:**
 
-- **@agent-infra** - Infrastructure, Docker, DevOps, deployment, monitoring, database setup
+**MAIN REFERENCE**: @.claude/likha-vibe-coding/checklist/agent-delegation.md
+
+- **@agent-infra** - Infrastructure, Docker, DevOps, deployment, monitoring, database administration
 - **@agent-backend** - Spring Boot, Spring Modulith, Java, Spring JDBC, API development
 - **@agent-frontend** - React, TypeScript, Vite, Chakra UI, TanStack Table, component development
 - **@agent-designer** - UI/UX design, wireframes, user flows, design systems, accessibility
@@ -52,12 +54,12 @@ Use Glob/Grep tools to search for similar functionality before creating new file
 NEVER create duplicate configurations, services, or components.
 
 **MANDATORY STEPS:**
+
 1. Search for existing similar classes/components using Glob patterns
-2. Check for related functionality using Grep searches  
+2. Check for related functionality using Grep searches
 3. Leverage existing implementations rather than creating new ones
 4. Only create new files when genuinely necessary and no existing solution exists
 
 ## Imports
 
 @.claude/likha-vibe-coding/checklist/agent-planning.md
-@.claude/likha-vibe-coding/checklist/ddd-checklist.md

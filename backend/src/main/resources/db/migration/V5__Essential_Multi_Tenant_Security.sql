@@ -54,7 +54,7 @@ ALTER TABLE public.upload_sessions ENABLE ROW LEVEL SECURITY;
 DO $$
 DECLARE
     schema_name TEXT;
-    table_name TEXT;
+    current_table TEXT;
     tables_to_secure TEXT[] := ARRAY[
         'contracts', 'licensors', 'licensees', 'brands', 
         'business_contracts', 'contract_files', 'contract_versions', 
@@ -62,14 +62,14 @@ DECLARE
     ];
 BEGIN
     -- Enable RLS on tenant_default schema tables
-    FOREACH table_name IN ARRAY tables_to_secure
+    FOREACH current_table IN ARRAY tables_to_secure
     LOOP
         IF EXISTS (
-            SELECT 1 FROM information_schema.tables 
-            WHERE table_schema = 'tenant_default' AND table_name = table_name
+            SELECT 1 FROM information_schema.tables t
+            WHERE t.table_schema = 'tenant_default' AND t.table_name = current_table
         ) THEN
-            EXECUTE format('ALTER TABLE tenant_default.%I ENABLE ROW LEVEL SECURITY', table_name);
-            RAISE NOTICE 'Enabled RLS on tenant_default.%', table_name;
+            EXECUTE format('ALTER TABLE tenant_default.%I ENABLE ROW LEVEL SECURITY', current_table);
+            RAISE NOTICE 'Enabled RLS on tenant_default.%', current_table;
         END IF;
     END LOOP;
 END $$;
@@ -190,24 +190,24 @@ CREATE POLICY tenant_isolation_policy ON public.upload_sessions
 -- RLS Policy for tenant_default schema tables
 DO $$
 DECLARE
-    table_name TEXT;
+    current_table TEXT;
     tables_with_tenant_id TEXT[] := ARRAY[
         'licensors', 'licensees', 'brands', 
         'business_contracts', 'contract_files', 'upload_sessions'
     ];
 BEGIN
-    FOREACH table_name IN ARRAY tables_with_tenant_id
+    FOREACH current_table IN ARRAY tables_with_tenant_id
     LOOP
         IF EXISTS (
-            SELECT 1 FROM information_schema.tables 
-            WHERE table_schema = 'tenant_default' AND table_name = table_name
+            SELECT 1 FROM information_schema.tables t
+            WHERE t.table_schema = 'tenant_default' AND t.table_name = current_table
         ) THEN
-            EXECUTE format('DROP POLICY IF EXISTS tenant_isolation_policy ON tenant_default.%I', table_name);
+            EXECUTE format('DROP POLICY IF EXISTS tenant_isolation_policy ON tenant_default.%I', current_table);
             EXECUTE format('CREATE POLICY tenant_isolation_policy ON tenant_default.%I
                 FOR ALL
                 TO likha_app_user, likha_readonly_user
-                USING (tenant_id = get_current_tenant_id())', table_name);
-            RAISE NOTICE 'Created RLS policy for tenant_default.%', table_name;
+                USING (tenant_id = get_current_tenant_id())', current_table);
+            RAISE NOTICE 'Created RLS policy for tenant_default.%', current_table;
         END IF;
     END LOOP;
 END $$;
@@ -353,11 +353,17 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Configure secure connection settings
 
 -- Set secure default values for connections
--- These settings should also be configured in postgresql.conf
+-- These settings should be configured manually by DBA in postgresql.conf or via psql
+-- Cannot be included in transactional migrations due to Flyway limitations
+/*
+-- MANUAL DBA STEPS - Execute these separately outside of migration:
 ALTER SYSTEM SET log_connections = on;
 ALTER SYSTEM SET log_disconnections = on;
 ALTER SYSTEM SET log_statement = 'mod'; -- Log data-modifying statements
 ALTER SYSTEM SET log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h ';
+SELECT pg_reload_conf(); -- Apply the changes
+*/
+DO $$ BEGIN RAISE NOTICE 'Database system configuration changes commented out - apply manually by DBA'; END $$;
 
 -- Create function to audit database connections
 CREATE OR REPLACE FUNCTION audit_connection()
@@ -660,4 +666,4 @@ INSERT INTO security_audit_log (
     CURRENT_TIMESTAMP
 );
 
-RAISE NOTICE 'V5 Essential Multi-Tenant Security implementation completed successfully!';
+DO $$ BEGIN RAISE NOTICE 'V5 Essential Multi-Tenant Security implementation completed successfully!'; END $$;

@@ -19,20 +19,21 @@ FROM maven:3.9-eclipse-temurin-21 AS backend-builder
 
 WORKDIR /app
 
-# Copy pom.xml first for better Docker layer caching
-COPY backend/pom.xml ./
+# Copy parent pom.xml and backend pom.xml for multi-module setup
+COPY pom.xml ./
+COPY backend/pom.xml ./backend/
 
 # Download dependencies (this layer will be cached if pom.xml doesn't change)
-RUN mvn dependency:go-offline -B
+RUN mvn dependency:go-offline -B -Dflyway.skip=true -pl backend
 
 # Copy backend source code
-COPY backend/src ./src
+COPY backend/src ./backend/src
 
 # Copy built frontend assets to Spring Boot static resources
-COPY --from=frontend-builder /frontend/dist ./src/main/resources/static
+COPY --from=frontend-builder /frontend/dist ./backend/src/main/resources/static
 
 # Build the Spring Boot application (skip frontend build since we already have it)
-RUN mvn clean package -DskipTests -Dfrontend.skip=true
+RUN mvn clean package -DskipTests -Dfrontend.skip=true -Dflyway.skip=true -pl backend
 
 # Stage 3: Runtime image
 FROM eclipse-temurin:21-jre-alpine
@@ -47,7 +48,7 @@ RUN addgroup -g 1001 -S appgroup && \
 WORKDIR /app
 
 # Copy the built JAR from builder stage
-COPY --from=backend-builder /app/target/*.jar app.jar
+COPY --from=backend-builder /app/backend/target/*.jar app.jar
 
 # Change ownership to non-root user
 RUN chown -R appuser:appgroup /app
