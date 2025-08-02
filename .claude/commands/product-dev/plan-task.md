@@ -6,7 +6,11 @@ You are a product team tasked with creating delivery plans for tasks. This comma
 - Re-evaluate the current plan if there's an in_progress task (only one task should be in_progress at a time)
 - Create a plan for the next pending task if no task is currently in_progress (using Implementation Timeline)
 
-You should use the appropriate subagents to accomplish this task through collaborative analysis. The lead agent should be determined by the task owner (Backend/Frontend/Infrastructure/Design/PM), with other agents as collaborators.
+**CRITICAL DELEGATION REQUIREMENT**: You MUST delegate the planning task to the appropriate agents based on the user story ownership:
+- The PRIMARY owner agent (as identified in the user story) MUST lead the planning effort
+- All other relevant agents MUST provide supporting analysis and input
+- The security agent MUST be included for security requirements and compliance review
+- Example: If a story has multiple team tasks, the team with the most critical path tasks leads, with others supporting
 
 You only need to generate the delivery plan and nothing else. Do not implement anything yet.
 
@@ -54,7 +58,7 @@ Use the Write tool with the EXACT path: `.claude/likha-vibe-coding/prod-dev/plan
    - Do NOT access src/, docs/, or any code directories
    - Do NOT access any files with .md, .txt, .json, .sql, .java, .ts, .js extensions outside allowed directories
 
-3. **SUBAGENT COMPLIANCE**: ALL subagents (pm, backend, frontend, infra, designer) MUST be explicitly instructed to only access the allowed files above.
+3. **SUBAGENT COMPLIANCE**: ALL subagents (pm, backend, frontend, infra, designer, security) MUST be explicitly instructed to only access the allowed files above.
 
    **SUBAGENT INSTRUCTION TEMPLATE**: Each subagent prompt MUST include this exact text:
 
@@ -91,13 +95,21 @@ Before launching any subagents, the main agent MUST:
 3. Confirm no other files will be accessed
 4. State: "File access validation complete - only allowed files will be accessed"
 
-**STEP 1: TASK STATUS ASSESSMENT**
+**STEP 1: TASK STATUS ASSESSMENT AND OWNER IDENTIFICATION**
 - Read `.claude/likha-vibe-coding/prod-dev/tasks.md`
-- Scan all tasks in the "Task Breakdown by Team" sections
+- Identify the user story details at the top of the file
+- Note the **Product Manager** or **Owner** field to determine primary ownership
+- Scan all tasks in the "Task Breakdown by Team" sections (including security tasks)
 - Look for any task with **Status**: in_progress (there should be only ONE)
 - If in_progress task found: Note the task ID, owner, and details for re-evaluation
 - If NO in_progress task: Proceed to analyze the "Implementation Timeline" section
-- **CRITICAL**: Identify task owners to determine which agent should lead the planning
+- **CRITICAL**: Map user story ownership to determine lead agent:
+  - Product Manager/PM owned → PM agent leads
+  - Backend heavy story → Backend agent leads
+  - Frontend heavy story → Frontend agent leads
+  - Infrastructure foundation → Infra agent leads
+  - Design-first story → Designer agent leads
+  - Security-critical story → Security agent leads
 
 **STEP 2: DELIVERY PLANNING**
 
@@ -116,9 +128,10 @@ Before launching any subagents, the main agent MUST:
    - Reassess priorities and resource allocation
 
 3. **Collaborating Agents - Domain Re-evaluation**
-   - All other agents (pm, backend, frontend, infra, designer) provide input
+   - All other agents (pm, backend, frontend, infra, designer, security) provide input
    - Review task progress in their respective domains
    - Identify any delivery risks or blockers
+   - Security agent reviews compliance and security requirements
    - Suggest plan adjustments or alternative approaches
    - Update delivery specifications as needed
 
@@ -155,6 +168,7 @@ Before launching any subagents, the main agent MUST:
 4. **Collaborating Agents - Domain-Specific Planning**
    - All other agents analyze their domain-specific tasks from tasks.md
    - Define what needs to be delivered in their area
+   - Security agent defines security requirements and compliance needs
    - Identify dependencies and integration points
    - Specify delivery sequence and handoff requirements
    - Provide input on task prioritization when multiple candidates exist
@@ -209,6 +223,9 @@ The generated delivery plan should include:
    - **Design Team**
      - Primary deliverables this phase
      - Key tasks to focus on
+   - **Security Team**
+     - Security requirements to implement
+     - Compliance checks to perform
 
 6. **Success Metrics & Milestones**
    - **Week 1 Goals**
