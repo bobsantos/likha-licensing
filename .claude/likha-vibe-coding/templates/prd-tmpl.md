@@ -16,6 +16,11 @@ Put overview here. Replace this with content relevant to:
 Put user requirements here. Replace this with content relevant to:
 - User personas with needs/goals
 - User stories (As a... I want... So that...)
+  - User story ID format
+    - Prefix should be based on feature name
+      - If feature is contract management then prefix is CM
+    - Suffix should be left zero padded 4 digit number
+      - example: CM-0001
 - Use cases and scenarios
 - User journey maps
 </user-requirements>

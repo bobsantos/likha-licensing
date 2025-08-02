@@ -1,153 +1,223 @@
-# Project Brief
+# Contract Management MVP - Product Brief
 
 ## Executive Summary
 
-The multi-tenant PostgreSQL implementation establishes a robust data isolation architecture for our brand licensing platform, enabling secure and scalable operations across multiple brand tenants. This project implements a schema-per-tenant approach using PostgreSQL 15+ on AWS RDS, ensuring complete data separation while maintaining operational efficiency. The solution directly supports our platform's core value proposition of providing secure, compliant licensing management for multiple brands simultaneously. Expected outcomes include enhanced data security, improved compliance posture, simplified tenant onboarding, and scalable infrastructure that supports business growth. Key success metrics include zero cross-tenant data leakage incidents, sub-second tenant provisioning, and 99.9% database uptime.
+The Contract Management MVP is the foundational module of the Likha Licensing Platform, designed to address the critical pain point of contract organization and tracking for small-to-medium licensing agencies. This MVP will be developed entirely in a local Docker environment during Month 1 of Phase 1, enabling rapid customer validation before production infrastructure investment.
+
+**Business Objectives:**
+- Establish core value proposition for licensing contract organization
+- Enable customer demos and validation within 4 weeks
+- Provide foundation for royalty management integration in Month 2
+- Achieve first paying customer validation to justify production investment
+
+**Key Success Metrics:**
+- 50+ contracts uploaded during customer trials
+- Successful customer demos with 2-3 prospects
+- First paying customer secured ($500-1000/month)
+- Contract search and metadata retrieval under 2 seconds
 
 ## Problem Statement
 
-Brand licensing platforms face critical challenges in managing sensitive licensing data across multiple brand tenants while maintaining strict data isolation and compliance requirements. Currently, many platforms struggle with shared database architectures that create security vulnerabilities, compliance risks, and operational complexities when serving multiple brands. Brand owners require absolute assurance that their proprietary licensing data, partner information, and financial details remain completely isolated from competitors and other tenants. Additionally, the licensing industry demands high availability and performance standards, as licensing agreements often involve time-sensitive approvals and revenue-generating activities. Without proper multi-tenancy, platforms face scaling bottlenecks, increased security risks, regulatory compliance issues, and the inability to provide enterprise-grade service level agreements to brand clients. This problem requires immediate attention as the licensing market increasingly demands platform solutions that can scale securely across multiple brands without compromising data integrity or performance.
+Small-to-medium licensing agencies (managing 50-500 contracts) currently face significant operational challenges:
+
+**Current Pain Points:**
+- **Contract Chaos**: Physical contracts stored in filing cabinets or scattered across email attachments, making retrieval time-consuming and error-prone
+- **Expiration Blindness**: No systematic tracking of contract expiration dates, leading to missed renewal opportunities and compliance issues
+- **Inefficient Search**: Manual searching through files when licensees or brand owners request contract information
+- **Multi-user Confusion**: Multiple team members accessing the same contracts without coordination, leading to version control issues
+- **Compliance Risk**: Difficulty in quickly locating specific contract terms for audits or legal inquiries
+
+**Market Opportunity:**
+Based on competitive analysis, existing solutions like Dependable Solutions, MyMediaBox, and Octane5 focus primarily on large enterprises or specific verticals. There's a clear gap for a streamlined, cost-effective solution targeting smaller licensing agencies that need core contract management without enterprise complexity.
+
+**Why Now:**
+The shift to remote work has accelerated the need for digital contract management. Licensing agencies can no longer rely on physical file systems, and the cost of not having organized contract data has become a critical business risk.
 
 ## Target Audience
 
-**Primary Users:**
-- **Platform Operations Teams**: DevOps engineers and database administrators who need reliable, maintainable multi-tenant infrastructure that reduces operational overhead while ensuring security and performance
-- **Brand IT Security Teams**: Chief Information Security Officers and IT security professionals at brand companies who require comprehensive data isolation guarantees and compliance documentation
-- **Platform Development Teams**: Backend engineers working with Spring Boot and database layers who need clear multi-tenant patterns and APIs for tenant-aware application development
+**Primary User Persona: Licensing Agency Administrator**
+- Demographics: 30-50 years old, manages 50-500 licensing contracts
+- Role: Operations manager or agency owner at small-medium licensing firm
+- Pain Points: Spends 2-3 hours daily searching for contract information
+- Goals: Quick contract retrieval, automated expiration tracking, team collaboration
 
-**Secondary Users:**  
-- **Brand Legal and Compliance Officers**: Legal professionals who need assurance that multi-tenant architecture meets industry compliance standards and contract requirements
-- **Platform Product Managers**: Product leaders who need scalable infrastructure that enables rapid tenant onboarding and feature deployment across multiple brands
-- **End Users (Brand Employees and Licensees)**: While not directly interacting with the database architecture, they benefit from improved performance, security, and reliability in their licensing workflows
+**Secondary User Persona: Licensing Agent**
+- Demographics: 25-45 years old, client-facing role
+- Role: Account manager or licensing specialist
+- Pain Points: Cannot quickly access contract details during client calls
+- Goals: Instant access to contract terms, licensee information, territory details
 
-The jobs-to-be-done framework centers on "help platform teams securely scale licensing operations across multiple brands without compromising data security, performance, or operational efficiency."
+**User Journey:**
+1. **Discovery**: Realizes current contract filing system is inefficient
+2. **Evaluation**: Demos multiple solutions, needs simple and cost-effective option
+3. **Trial**: Uploads existing contracts to test search and organization features
+4. **Adoption**: Migrates entire contract database and establishes team workflows
+5. **Expansion**: Adds royalty management and additional modules as business grows
+
+**Jobs-to-be-Done:**
+- "Help me find any contract in under 30 seconds"
+- "Alert me before contracts expire so I can initiate renewals"
+- "Let my team access contract information without calling me"
+- "Organize contracts by licensee, brand, and territory for easy reporting"
 
 ## Competitive Analysis
 
 **Direct Competitors:**
-Most enterprise SaaS platforms in adjacent spaces (contract management, partner relationship management) use various multi-tenancy approaches ranging from shared databases with tenant identifiers to fully isolated database instances. However, the brand licensing space has unique requirements that differentiate our approach.
+
+**Dependable Solutions**
+- Strengths: Comprehensive feature set, established market presence
+- Weaknesses: Complex interface, high cost ($200-500/month), enterprise-focused
+- Positioning: We provide essential features at 1/3 the cost with simpler UX
+
+**MyMediaBox**
+- Strengths: Media-specific features, good brand asset management
+- Weaknesses: Primarily targets media/entertainment, lacks licensing-specific workflows
+- Positioning: We focus specifically on licensing contracts vs. general media management
+
+**Octane5**
+- Strengths: Modern interface, good reporting capabilities
+- Weaknesses: Expensive, requires extensive setup and training
+- Positioning: We offer immediate value with minimal setup requirements
+
+**Flowhaven**
+- Strengths: Workflow automation, approval processes
+- Weaknesses: Over-engineered for simple contract storage needs
+- Positioning: We prioritize core contract management over complex workflow automation
 
 **Indirect Competitors:**
-- **Shared Database with Row-Level Security**: Many platforms use PostgreSQL's row-level security features, but this approach doesn't provide the complete isolation required for competing brands who demand absolute data separation
-- **Database-per-Tenant**: Some platforms provision separate database instances per tenant, but this approach becomes operationally complex and cost-prohibitive at scale
-- **Application-Level Tenancy**: Competitors rely solely on application logic for tenant isolation, creating potential security vulnerabilities and compliance risks
+- Google Drive/Dropbox: File storage without licensing-specific metadata
+- General CRM systems: Not designed for contract lifecycle management
+- Legal document management: Too complex and expensive for licensing agencies
 
 **Market Positioning:**
-Our schema-per-tenant approach with PostgreSQL provides the optimal balance of security, performance, and operational efficiency specifically for brand licensing platforms. This architecture delivers enterprise-grade data isolation that satisfies the most stringent brand security requirements while maintaining cost-effectiveness and operational simplicity.
+"The simplest way for licensing agencies to organize, search, and track their contracts - without the complexity and cost of enterprise solutions."
 
 **Differentiation Opportunities:**
-- **Industry-Specific Compliance**: Our implementation addresses specific licensing industry regulations and audit requirements that generic multi-tenant solutions overlook
-- **Performance Optimization**: Database schema design optimized for licensing workflow patterns (approval chains, royalty calculations, contract hierarchies)
-- **Operational Excellence**: Simplified tenant provisioning and management that enables rapid brand onboarding without compromising security standards
+- Licensing-specific metadata fields (IP type, territory, exclusivity)
+- Tenant-based architecture for agency-client separation
+- Local development approach enabling rapid customer validation
+- Integration-ready for royalty management expansion
 
 ## Constraints and Requirements
 
-### Business Constraints
-- **Timeline**: Implementation must align with customer onboarding schedule
-- **Budget**: Must work within existing AWS infrastructure budget without requiring additional RDS instance provisioning
-- **Compliance**: Strict data isolation required to meet brand licensing industry standards and potential SOC2/GDPR requirements
-- **Backward Compatibility**: Cannot disrupt existing single-tenant functionality during migration
+**Technical Constraints:**
+- Local Docker development environment only (no cloud infrastructure in MVP)
+- PostgreSQL database with schema-per-tenant architecture
+- Local file system storage for contract documents
+- Spring Boot REST API backend with React/Chakra UI frontend
+- Must be container-ready for future production deployment
 
-### Technical Constraints
-- **Spring Boot 3.2+ Framework**: Application must be built using Spring Boot 3.2+ with Java 21 for LTS support and modern language features
-- **Schema-per-tenant Architecture**: Each tenant must have isolated database schemas within PostgreSQL 15+ for data segregation and security
-- **Spring JDBC Implementation**: Data access layer must use Spring JDBC templates for performance and control
-- **Spring Modulith Structure**: Application architecture must follow Spring Modulith patterns for clear module boundaries and maintainability
+**Timeline Constraints:**
+- 4-week development window for complete MVP
+- Must be demo-ready by Week 4 for customer validation
+- Local environment must handle realistic demo scenarios (100+ contracts)
 
-### AWS Infrastructure Requirements
-- **AWS RDS PostgreSQL 15+** with Multi-AZ deployment for high availability
-- **AWS Fargate** deployment with appropriate container resource limits
-- **Application Load Balancer** with SSL termination and health checks
-- **Security Groups** configured for least-privilege access between components
-- **Encryption**: RDS encryption at rest using AWS KMS customer-managed keys
-- **Network Security**: TLS 1.2+ for all data in transit
+**Budget Constraints:**
+- Zero production infrastructure costs during MVP phase
+- Development time only investment until first paying customer
+- Must defer $500-800/month in AWS costs until customer validation
 
-### Database and Performance Requirements
-- **Connection Pooling**: HikariCP with tenant-aware connection routing for optimal resource utilization
-- **Database Migration Strategy**: Use Flyway or Liquibase with tenant-specific migration scripts and rollback capabilities
-- **Query Performance**: Database indexing strategy per tenant schema with monitoring
-- **Storage**: RDS General Purpose SSD (gp3) with baseline IOPS performance
+**Compliance Requirements:**
+- Basic user authentication and session management
+- Tenant data isolation (schema-per-tenant)
+- Secure file upload and storage
+- Audit trail for document access (future requirement)
 
-### Security and Authorization Requirements
-- **Spring Security Integration**: Implement JWT-based authentication with tenant context extraction from tokens
-- **Tenant Isolation**: Enforce database-level tenant isolation through dynamic schema switching
-- **API Authorization**: Implement role-based access control (RBAC) with tenant-scoped permissions
-- **Audit Logging**: CloudTrail enabled for all AWS API calls and PostgreSQL query logging for audit trails
+**Resource Availability:**
+- @agent-backend: Spring Boot API development, PostgreSQL schema design
+- @agent-frontend: React components, Chakra UI implementation  
+- @agent-infra: Docker environment optimization, local database setup
+- @agent-designer: UI/UX wireframes, user flows for contract management
 
-### Development and Testing Requirements
-- **Spring Boot Test Framework**: All testing must use Spring Boot Test with TestContainers for integration tests
-- **Test Coverage**: Maintain minimum 80% code coverage for service and repository layers
-- **REST API Standards**: All endpoints must follow RESTful conventions with OpenAPI 3.0 specifications
+**Integration Requirements:**
+- Must support future integration with royalty management module
+- API design should accommodate multi-tenant expansion
+- Database schema must scale to 1000+ contracts per tenant
 
 ## Success Criteria
 
-### Business Success Metrics
-- **Zero Data Leakage**: No cross-tenant data access incidents post-implementation
-- **Tenant Onboarding Velocity**: New tenant provisioning time reduced to under 1 hour (automated)
-- **System Availability**: Maintain 99.9% uptime during migration and post-implementation
-- **Performance Baseline**: Application response times remain within 10% of pre-migration benchmarks
+**Technical KPIs:**
+- Contract upload and storage functional in local environment
+- Search response time under 2 seconds for 500+ contracts
+- Support for 5+ concurrent users in demo environment
+- 99%+ uptime during customer demo sessions
+- Zero data loss during file upload operations
 
-### Performance and Scalability Metrics
-- **API Response Times**: 95% of API requests must respond within 200ms for CRUD operations
-- **Database Response Time**: Average query response time ≤ 100ms for 95th percentile
-- **Application Latency**: End-to-end API response time ≤ 500ms for 99th percentile
-- **Concurrent Tenant Support**: Support minimum 100 concurrent tenants with isolated performance characteristics
-- **Tenant Onboarding**: New tenant schema provisioning ≤ 2 minutes
+**Business KPIs:**
+- 2-3 customer demos completed successfully
+- 50+ contracts uploaded during customer trials
+- Positive feedback on core search and organization features
+- First paying customer commitment secured ($500+/month)
+- Customer reference obtained for future sales efforts
 
-### Reliability and Availability Metrics
-- **System Uptime**: 99.9% availability (≤ 8.77 hours downtime per year)
-- **RDS Availability**: Multi-AZ failover time ≤ 60 seconds
-- **Zero Data Loss**: RPO = 0 for committed transactions during planned maintenance
-- **Successful Deployments**: ≥ 95% deployment success rate without rollback
+**User Experience KPIs:**
+- Contract upload process completable in under 2 minutes
+- Search results returned within 3 clicks maximum
+- User onboarding completable without training documentation
+- 90%+ task completion rate during user testing sessions
 
-### Quality and Security Success Criteria
-- **Test Suite Execution**: Full test suite (unit + integration) must complete within 5 minutes
-- **Data Isolation Verification**: 100% tenant data isolation with zero cross-tenant data leakage in testing
-- **Security Scan Results**: Zero critical vulnerabilities in container images
-- **Access Audit**: 100% of database access logged and monitored
-- **Encryption Coverage**: 100% of data encrypted at rest and in transit
+**Launch Criteria:**
+- All core features functional in Docker environment
+- Demo environment stable and impressive
+- Customer prospects identified and engaged
+- Sales presentation materials prepared
+- Production migration plan documented
 
-### Operational Excellence Metrics
-- **Monitoring Coverage**: 100% of critical infrastructure components monitored
-- **Alert Response**: Mean Time to Detection (MTTD) ≤ 5 minutes for critical issues
-- **Recovery Time**: Mean Time to Recovery (MTTR) ≤ 30 minutes for P1 incidents
-- **Schema Migration Success**: Database schema updates must apply successfully across all tenant schemas with zero downtime
+**Definition of Done:**
+- Contract Management MVP meets all specified functional requirements
+- Local environment demonstrates scalability to customer requirements  
+- Customer validation proves product-market fit for target segment
+- Foundation established for Month 2 royalty management integration
 
-### Launch Criteria
-- **Pre-Launch**:
-  - All existing tenant data successfully migrated with data integrity validation
-  - Rollback procedures tested and documented
-  - Monitoring and alerting configured for multi-tenant scenarios
-- **Launch Gates**:
-  - Infrastructure team sign-off on database configuration
-  - Backend team confirmation of tenant routing implementation
-  - Successful load testing with multiple concurrent tenants
+**Go/No-Go Decision Factors:**
+- Customer willingness to pay validated through trials
+- Core technical architecture proves sound for scaling
+- User feedback confirms value proposition alignment
+- No critical technical blockers for production deployment
 
 ## Risks and Dependencies
 
-### Technical Risks
-- **Schema Migration Complexity**: Risk of data loss or corruption during tenant schema migration from existing single-tenant structure
-- **Performance Degradation**: Potential impact of schema-per-tenant approach on query performance and connection pooling efficiency
-- **Multi-tenant Routing**: Risk of tenant context misrouting leading to cross-tenant data exposure
-- **Database Connection Limits**: PostgreSQL connection limits may be reached with multiple tenant schemas and concurrent users
+**Technical Risks:**
+- **Local Environment Limitations**: Demo environment may not fully represent production scalability
+  - *Mitigation*: Load testing with realistic contract volumes, performance optimization
+- **File Storage Scaling**: Local file system may not handle large contract volumes efficiently
+  - *Mitigation*: Implement file size limits, prepare S3 migration strategy for production
+- **Database Performance**: PostgreSQL performance with multiple tenant schemas
+  - *Mitigation*: Database indexing optimization, query performance monitoring
+- **Browser Compatibility**: React frontend compatibility across customer environments
+  - *Mitigation*: Cross-browser testing, progressive enhancement approach
 
-### Market Risks
-- **Customer Adoption**: Brand clients may require additional security validations and compliance certifications before trusting multi-tenant architecture
-- **Competitive Response**: Competitors may accelerate their own multi-tenant offerings, reducing our differentiation window
-- **Regulatory Changes**: New data protection regulations may require architectural modifications post-implementation
+**Market Risks:**
+- **Customer Adoption Resistance**: Agencies may be hesitant to digitize existing paper processes
+  - *Mitigation*: Gradual migration approach, maintain hybrid paper/digital workflow support
+- **Competitive Response**: Existing players may lower prices or improve features during our development
+  - *Mitigation*: Focus on unique value proposition, rapid iteration based on customer feedback
+- **Market Size Validation**: Target market of 50-500 contract agencies may be smaller than expected
+  - *Mitigation*: Expand target range, explore adjacent markets (IP law firms, brand consultants)
 
-### Cross-team Dependencies
-- **Infrastructure Team**: AWS RDS configuration, monitoring setup, and disaster recovery implementation
-- **Backend Team**: Spring Boot application modifications, tenant routing logic, and API endpoint updates
-- **DevOps Team**: CI/CD pipeline updates to handle schema migrations and multi-tenant deployments
-- **Security Team**: Compliance validation, penetration testing, and security audit procedures
-- **Product Team**: Customer communication strategy and migration timeline coordination
+**Customer Validation Risks:**
+- **No Paying Customer by Month 3**: Customer trials don't convert to paying contracts
+  - *Mitigation*: Multiple prospects in pipeline, willingness to extend local development phase
+- **Feature-Value Mismatch**: Customers need features not included in MVP scope
+  - *Mitigation*: Rapid iteration capability, prioritize based on customer feedback intensity
 
-### Mitigation Strategies
-- **Comprehensive Testing**: Implement extensive integration testing with TestContainers and automated schema migration validation
-- **Phased Rollout**: Deploy to staging environment with production data copies before full production migration
-- **Rollback Procedures**: Develop and test complete rollback mechanisms for each phase of implementation
-- **Performance Monitoring**: Establish baseline metrics and continuous monitoring throughout migration process
-- **Security Audits**: Conduct third-party security assessments and penetration testing before launch
-- **Customer Communication**: Proactive communication plan with customers about security enhancements and compliance benefits
-- **Documentation**: Comprehensive operational runbooks and troubleshooting guides for support teams
+**Cross-Team Dependencies:**
+- **Agent Coordination**: Success requires synchronized effort across backend, frontend, infra, and design teams
+  - *Mitigation*: Weekly sprint planning, clear API contracts, shared development standards
+- **Customer Demo Readiness**: All teams must deliver demo-quality work simultaneously
+  - *Mitigation*: Demo rehearsals, backup plans for technical issues, customer expectation management
+- **Production Migration Planning**: Local-to-production transition requires infrastructure planning
+  - *Mitigation*: Architecture documentation, environment configuration management, migration scripts
+
+**External Dependencies:**
+- **Customer Availability**: Prospect availability for demos and trials during Month 2.5-3 window
+  - *Mitigation*: Multiple prospects identified, flexible demo scheduling, remote demo capabilities
+- **Sales Process Coordination**: Product readiness must align with sales pipeline development
+  - *Mitigation*: Regular sales-product alignment meetings, clear handoff procedures
+
+**Mitigation Strategies:**
+- Maintain close customer contact throughout development for continuous validation
+- Prepare multiple backup customer prospects before committing to production investment
+- Design architecture for easy local-to-production migration from day one
+- Establish clear success metrics and go/no-go decision points at each phase gate
+- Create contingency plans for extending local development if customer validation takes longer than expected

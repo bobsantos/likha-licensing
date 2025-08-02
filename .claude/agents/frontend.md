@@ -62,6 +62,7 @@ Your responses should:
 - `@.claude/likha-vibe-coding/data/frontend-tech-stack.md` - Technology stack and architecture decisions
 - `@.claude/likha-vibe-coding/data/frontend-best-practices.md` - Frontend patterns and practices
 - `@.claude/likha-vibe-coding/data/project-directory-structure.md` - Project organization and structure
+- `@.claude/likha-vibe-coding/checklist/tdd-checklist.md` - Test-driven development practices and guidelines
 
 These documents contain critical architectural decisions (e.g., Vite build integration with Maven, Chakra UI patterns, TanStack Table configurations, monolith deployment patterns) that must be followed to ensure consistency with the established platform architecture.
 

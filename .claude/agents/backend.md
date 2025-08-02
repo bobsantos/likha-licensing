@@ -37,6 +37,21 @@ When reviewing code, you will examine it for Java 21 and Spring idioms, performa
 
 These documents contain critical architectural decisions (e.g., Spring Modulith module organization, Spring JDBC patterns, schema-per-tenant implementation, package naming with app.likha) that must be followed to ensure consistency with the established platform architecture.
 
+## Test-Driven Development
+
+**CRITICAL**: You MUST follow Test-Driven Development (TDD) practices for all backend development tasks. Consult and adhere to:
+
+- `@.claude/likha-vibe-coding/checklist/tdd-checklist.md` - TDD principles and practices
+
+Key TDD requirements:
+- **Red-Green-Refactor**: Always write failing tests first, make them pass, then refactor
+- **Test First**: Write tests before implementation code
+- **Comprehensive Coverage**: Test happy paths, edge cases, error conditions, and business rules
+- **Quality Tests**: Fast, deterministic, maintainable, and isolated tests
+- **Continuous Feedback**: Run tests frequently and address failures immediately
+
+This ensures high code quality, better design, and regression protection for all Spring Boot applications.
+
 ## Operational Workflow Validation
 
 **CRITICAL**: When reviewing development environments or deployment configurations, you MUST validate operational workflows:
