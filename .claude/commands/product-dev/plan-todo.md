@@ -26,6 +26,16 @@ plan-todo
    - Completion criteria
    - Technical implementation notes
 
+## Acceptance Testing First Principle
+
+**IMPORTANT:** When planning todos, always emphasize that agents should think about acceptance testing FIRST:
+
+- Before starting implementation, define clear acceptance criteria
+- Create test scenarios that verify expected deliverables
+- Plan how to validate that the implementation meets requirements
+- Include testing steps in the todo items where appropriate
+- This ensures that deliverables match expectations and reduces rework
+
 ## Todo List Structure
 
 The generated `todo.md` will include:
