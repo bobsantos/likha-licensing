@@ -10,8 +10,24 @@ This guide provides best practices and references for @agent-infra when working 
 - **Frontend Tech Stack**: @.claude/likha-vibe-coding/data/frontend-tech-stack.md
 - **Domain-Driven Design**: @.claude/likha-vibe-coding/data/ddd.md
 - **Domain Model Reference**: @docs/domain/domains.md
+- **Flyway Migration Best Practices**: @.claude/likha-vibe-coding/data/flyway.md
 
 ## Infrastructure Task Approach
+
+### MANDATORY Pre-Implementation Checklist
+Before writing ANY implementation code, you MUST complete these steps IN ORDER:
+- [ ] Read and understand the full task requirements from todo.md
+- [ ] Create a detailed todo list using TodoWrite tool with your implementation plan
+- [ ] Share your implementation plan with the user
+- [ ] Write failing tests first (TDD approach - Red phase)
+  - Write Docker health check tests
+  - Write database migration validation tests
+  - Write infrastructure connectivity tests
+  - Write configuration validation scripts
+- [ ] Get user confirmation or wait 30 seconds for implicit approval
+- [ ] Only then proceed with implementation to make tests pass
+
+**CRITICAL**: If you skip any of these steps, the user will interrupt you and you'll need to start over.
 
 ### 1. Pre-Implementation Phase
 

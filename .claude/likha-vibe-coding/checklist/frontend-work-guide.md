@@ -13,6 +13,21 @@ This guide provides best practices and references for @agent-frontend when worki
 
 ## Frontend Task Approach
 
+### MANDATORY Pre-Implementation Checklist
+Before writing ANY implementation code, you MUST complete these steps IN ORDER:
+- [ ] Read and understand the full task requirements from todo.md
+- [ ] Create a detailed todo list using TodoWrite tool with your implementation plan
+- [ ] Share your implementation plan with the user
+- [ ] Write failing tests first (TDD approach - Red phase)
+  - Write React Testing Library tests for component behavior
+  - Write unit tests for custom hooks and utilities
+  - Write integration tests for user workflows
+  - Test accessibility requirements (WCAG compliance)
+- [ ] Get user confirmation or wait 30 seconds for implicit approval
+- [ ] Only then proceed with implementation to make tests pass
+
+**CRITICAL**: If you skip any of these steps, the user will interrupt you and you'll need to start over.
+
 ### 1. Pre-Implementation Phase
 
 **Understand the Task Context**

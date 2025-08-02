@@ -46,6 +46,17 @@ When implementing features or stories, always aim for an MVP in at most 2 weeks.
 
 **FALLBACK RULE**: If delegation doesn't produce concrete results within 1-2 attempts, proceed with direct implementation to ensure user requests are completed efficiently.
 
+## Before Implementation - Always Check for Existing Code
+
+Use Glob/Grep tools to search for similar functionality before creating new files.
+NEVER create duplicate configurations, services, or components.
+
+**MANDATORY STEPS:**
+1. Search for existing similar classes/components using Glob patterns
+2. Check for related functionality using Grep searches  
+3. Leverage existing implementations rather than creating new ones
+4. Only create new files when genuinely necessary and no existing solution exists
+
 ## Imports
 
 @.claude/likha-vibe-coding/checklist/agent-planning.md

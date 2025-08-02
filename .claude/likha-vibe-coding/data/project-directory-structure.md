@@ -2,8 +2,6 @@
 
 Since our application or platform will be a monolith, both the backend and frontend will live in the same repository.
 
-Here's the basic project layout which should serve as a guide when bootstrapping the project.
-
 .
 ├── frontend/ # React frontend
 │ ├── public/  

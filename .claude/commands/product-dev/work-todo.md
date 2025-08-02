@@ -21,35 +21,55 @@ This command will:
 
 ### 1. Read Todo List
 - Load the current todo list from `@.claude/likha-vibe-coding/prod-dev/todo.md`
-- Parse the structure to identify:
-  - Task owner (lead agent)
-  - Supporting teams
-  - Task priorities (HIGH, MEDIUM, LOW)
-  - Acceptance criteria
 
-### 2. Find Next Task
+### 2. Find Next Task and Lead Agent
 - Look for the first uncompleted task `- [ ]` in priority order:
   - First check HIGH priority tasks
   - Then MEDIUM priority tasks
   - Finally LOW priority tasks
-- Extract the complete task description and any sub-tasks
+- Identify the **Task Owner** (lead agent) from the task metadata
+- **No further analysis required** - proceed immediately to delegation
 
 ### 3. Delegate to Lead Agent
 - Identify the **Task Owner** from the todo metadata (e.g., @agent-infra, @agent-backend, etc.)
-- Provide the complete task context:
-  - Task description and requirements
-  - Acceptance criteria from the header
-  - Supporting team collaboration needs
-  - Any technical implementation notes
-  - Reference to the appropriate work guide (see Work Guide section below)
+- Use the following delegation template for ALL agents:
+
+```
+Work on {todo_id} from @.claude/likha-vibe-coding/prod-dev/todo.md
+
+MANDATORY SEQUENCE - DO NOT SKIP ANY STEPS:
+1. Read the full task context from the todo file
+2. Check for existing files/functionality before implementing:
+   - Search for similar classes, configurations, or components
+   - Use existing implementations where possible
+   - Avoid creating duplicate functionality
+3. Create a detailed todo list using TodoWrite tool with your implementation plan
+4. Share your plan with the user BEFORE writing any code
+5. Write failing tests first (TDD approach - Red phase)
+   - Backend: Write acceptance/integration tests
+   - Frontend: Write component/unit tests
+   - Infra: Write validation/smoke tests
+   - Skip only if genuinely not applicable
+6. Wait for user confirmation or 30 seconds
+7. Only then implement code to make tests pass (Green phase)
+8. Refactor if needed (Refactor phase)
+9. Run all tests to ensure nothing breaks from your changes
+
+CRITICAL: If you start coding without completing steps 1-4, the user will interrupt you.
+
+Follow your work guide at {work_guide_path}
+```
 
 ### 4. Task Execution
 - Lead agent implements the task
 - Coordinates with supporting agents as specified
 - Validates implementation against acceptance criteria
 
-### 5. Update Status
-- Once task is completed:
+### 5. Validation & Update Status
+- Before marking task as completed:
+  - Run all tests to ensure nothing breaks from the changes
+  - Verify the implementation meets acceptance criteria
+- Once validation passes:
   - Mark the todo item as completed `- [x]`
   - Update the todo file with completion status
   - Report completion back to user
@@ -61,13 +81,12 @@ This command will:
 1. User runs: /work-todo
 2. Command reads @.claude/likha-vibe-coding/prod-dev/todo.md
 3. Finds next HIGH priority task: "todo-1: Design contract management database schema"
-4. Identifies metadata:
-   - Task Owner: @agent-infra (Lead)
-   - Supporting: @agent-backend, @agent-security
-5. Delegates task to @agent-infra with full context
-6. @agent-infra completes task
-7. Updates todo-1 from [ ] to [x] in the file
-8. Reports completion to user
+4. Identifies Task Owner: @agent-infra (Lead)
+5. Delegates to @agent-infra with: "Work on todo-1 from @.claude/likha-vibe-coding/prod-dev/todo.md"
+6. @agent-infra reads the todo file and gathers all context
+7. @agent-infra completes task
+8. Updates todo-1 from [ ] to [x] in the file
+9. Reports completion to user
 ```
 
 ## Work Guide
