@@ -8,6 +8,7 @@ This guide provides best practices and references for @agent-infra when working 
 - **DevOps Best Practices**: @.claude/likha-vibe-coding/data/devops-best-practices.md
 - **Backend Tech Stack**: @.claude/likha-vibe-coding/data/backend-tech-stack.md
 - **Frontend Tech Stack**: @.claude/likha-vibe-coding/data/frontend-tech-stack.md
+- **Domain-Driven Design**: @.claude/likha-vibe-coding/data/ddd.md
 
 ## Infrastructure Task Approach
 
