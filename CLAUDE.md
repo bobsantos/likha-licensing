@@ -46,4 +46,5 @@ When implementing features or stories, always aim for an MVP in at most 2 weeks.
 
 ## Imports
 
-@.claude/likha-vibe-coding/checklist/agent-panning.md
+@.claude/likha-vibe-coding/checklist/agent-planning.md
+@.claude/likha-vibe-coding/checklist/ddd-checklist.md

@@ -64,3 +64,7 @@ Your responses should be technical and detailed while remaining actionable. Use 
 These documents contain critical architectural decisions (e.g., schema-per-tenant vs database-per-tenant, Spring Modulith usage, Docker configuration patterns) that must be followed to ensure consistency with the established platform architecture.
 
 Always validate your recommendations against production best practices and industry standards. If you identify potential risks or limitations, state them explicitly with mitigation strategies.
+
+## Imports
+
+@.claude/likha-vibe-coding/checklist/tdd-checklist.md
