@@ -165,13 +165,33 @@
                         <suppressionFiles>
                             <suppressionFile>${project.basedir}/.github/dependency-check-suppressions.xml</suppressionFile>
                         </suppressionFiles>
+                        <!-- Use environment variable for API key (fallback to nvdApiKey) -->
                         <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
+                        <!-- Increase delay to avoid rate limiting (default: 2000ms with API key) -->
+                        <nvdApiDelay>4000</nvdApiDelay>
+                        <!-- Configure retry settings -->
+                        <nvdMaxRetryCount>3</nvdMaxRetryCount>
+                        <!-- Enable data directory caching for better performance -->
+                        <dataDirectory>${project.build.directory}/dependency-check-data</dataDirectory>
                         <formats>
                             <format>HTML</format>
                             <format>JSON</format>
                         </formats>
+                        <!-- Disable analyzers that aren't needed for typical Java projects -->
                         <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                         <centralAnalyzerEnabled>false</centralAnalyzerEnabled>
+                        <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
+                        <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
+                        <pyDistributionAnalyzerEnabled>false</pyDistributionAnalyzerEnabled>
+                        <pyPackageAnalyzerEnabled>false</pyPackageAnalyzerEnabled>
+                        <rubygemsAnalyzerEnabled>false</rubygemsAnalyzerEnabled>
+                        <cocoapodsAnalyzerEnabled>false</cocoapodsAnalyzerEnabled>
+                        <bundleAuditAnalyzerEnabled>false</bundleAuditAnalyzerEnabled>
+                        <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
+                        <nugetconfAnalyzerEnabled>false</nugetconfAnalyzerEnabled>
+                        <composerAnalyzerEnabled>false</composerAnalyzerEnabled>
+                        <autoconfAnalyzerEnabled>false</autoconfAnalyzerEnabled>
+                        <cmakeAnalyzerEnabled>false</cmakeAnalyzerEnabled>
                     </configuration>
                 </plugin>
             </plugins>
