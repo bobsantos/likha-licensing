@@ -96,29 +96,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      # Check for documentation-only changes to skip OWASP scan
-      - name: Check for documentation-only changes
-        id: check_docs_only
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          # Get changed files in this PR
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }})
-          echo "Changed files:"
-          echo "$CHANGED_FILES"
-          
-          # Check if only documentation files changed
-          if echo "$CHANGED_FILES" | grep -qvE '\.(md|txt|rst|adoc)$|^docs/|^README|^LICENSE|^\.github/.*\.md$'; then
-            echo "Non-documentation files changed - OWASP scan needed"
-            echo "docs_only=false" >> $GITHUB_OUTPUT
-          else
-            echo "Only documentation files changed - skipping OWASP scan"
-            echo "docs_only=true" >> $GITHUB_OUTPUT
-          fi
-
       # Optimized OWASP NVD Data Caching Strategy
       - name: Cache OWASP NVD Database
         id: cache_nvd
-        if: ${{ github.event.inputs.skip_owasp != 'true' && (github.event_name != 'pull_request' || steps.check_docs_only.outputs.docs_only != 'true') }}
+        if: ${{ github.event.inputs.skip_owasp != 'true' }}
         uses: actions/cache@v4
         with:
           path: |
@@ -126,14 +107,14 @@ jobs:
             backend/target/dependency-check-data
             ~/.cache/dependency-check
             /tmp/dependency-check
-          key: ${{ github.event.inputs.force_full_scan == 'true' && format('{0}-owasp-nvd-force-{1}', runner.os, github.run_id) || format('{0}-owasp-nvd-{1}-{2}', runner.os, hashFiles('**/pom.xml'), startsWith(github.ref, 'refs/heads/') && github.ref_name || github.event.pull_request.base.ref) }}
+          key: ${{ github.event.inputs.force_full_scan == 'true' && format('{0}-owasp-nvd-force-{1}', runner.os, github.run_id) || format('{0}-owasp-nvd-{1}', runner.os, hashFiles('**/pom.xml')) }}
           restore-keys: |
             ${{ runner.os }}-owasp-nvd-${{ hashFiles('**/pom.xml') }}-
             ${{ runner.os }}-owasp-nvd-
 
       # Performance monitoring start
       - name: Record OWASP scan start time
-        if: ${{ github.event.inputs.skip_owasp != 'true' && (github.event_name != 'pull_request' || steps.check_docs_only.outputs.docs_only != 'true') }}
+        if: ${{ github.event.inputs.skip_owasp != 'true' }}
         run: |
           echo "OWASP_START_TIME=$(date +%s)" >> $GITHUB_ENV
           echo "Starting OWASP dependency check at $(date)"
@@ -148,7 +129,7 @@ jobs:
           fi
 
       - name: Run OWASP Dependency Check (Backend) - Attempt 1
-        if: ${{ github.event.inputs.skip_owasp != 'true' && (github.event_name != 'pull_request' || steps.check_docs_only.outputs.docs_only != 'true') }}
+        if: ${{ github.event.inputs.skip_owasp != 'true' }}
         id: owasp_attempt_1
         run: |
           echo "Running consolidated OWASP dependency vulnerability scan (Attempt 1)..."
@@ -170,7 +151,7 @@ jobs:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
       - name: Run OWASP Dependency Check (Backend) - Fallback without API Key
-        if: ${{ github.event.inputs.skip_owasp != 'true' && (github.event_name != 'pull_request' || steps.check_docs_only.outputs.docs_only != 'true') && steps.owasp_attempt_1.outcome == 'failure' }}
+        if: ${{ github.event.inputs.skip_owasp != 'true' && steps.owasp_attempt_1.outcome == 'failure' }}
         id: owasp_fallback
         run: |
           echo "OWASP scan with API key failed. Attempting fallback scan without API key..."
@@ -186,24 +167,8 @@ jobs:
             -DthreadCount=1
         continue-on-error: true
 
-      # Skip message when documentation-only changes
-      - name: Create OWASP documentation skip report
-        if: ${{ github.event.inputs.skip_owasp != 'true' && github.event_name == 'pull_request' && steps.check_docs_only.outputs.docs_only == 'true' }}
-        run: |
-          cat > owasp-performance.md << EOF
-          ## OWASP Performance Metrics
-          
-          - **Status**: SKIPPED (Documentation-only changes detected)
-          - **Changed Files**: Documentation files only
-          - **Timestamp**: $(date)
-          - **Runner**: ${{ runner.os }}
-          - **Workflow Trigger**: ${{ github.event_name }}
-          - **Performance Impact**: Saved ~2-10 minutes by skipping scan
-          EOF
-          echo "OWASP_STATUS=skipped_docs_only" >> $GITHUB_ENV
-
       - name: Check OWASP Results and Generate Summary
-        if: ${{ github.event.inputs.skip_owasp != 'true' && (github.event_name != 'pull_request' || steps.check_docs_only.outputs.docs_only != 'true') }}
+        if: ${{ github.event.inputs.skip_owasp != 'true' }}
         run: |
           if [ "${{ steps.owasp_attempt_1.outcome }}" == "success" ]; then
             echo "✅ OWASP scan completed successfully with API key"
@@ -218,7 +183,7 @@ jobs:
 
       # Performance monitoring end
       - name: Calculate OWASP scan duration
-        if: ${{ always() && github.event.inputs.skip_owasp != 'true' && (github.event_name != 'pull_request' || steps.check_docs_only.outputs.docs_only != 'true') }}
+        if: ${{ always() && github.event.inputs.skip_owasp != 'true' }}
         run: |
           END_TIME=$(date +%s)
           DURATION=$((END_TIME - OWASP_START_TIME))
@@ -255,7 +220,6 @@ jobs:
           - Enhanced NVD database caching with multiple cache paths
           - Optimized connection timeouts and retry settings
           - Smart cache key strategy based on pom.xml changes
-          - Documentation-only change detection
           - Reduced API delay from 16s to 12s with API key
           
           ### Troubleshooting Notes
@@ -263,7 +227,6 @@ jobs:
           - Fallback method uses local database and longer delays
           - Check GitHub Secrets for valid NVD_API_KEY if API method fails consistently
           - Cache miss significantly increases scan time (5-10 minutes)
-          - Documentation-only PRs automatically skip OWASP scan
           EOF
 
       # Skip message when OWASP is disabled
@@ -626,7 +589,6 @@ jobs:
           ## Infrastructure Optimizations Applied
           - Consolidated OWASP scans to code-quality workflow only
           - Optimized NVD database caching strategy
-          - Added conditional execution for resource management
           - Implemented performance monitoring and timing
           - Enhanced parallel job execution
           
