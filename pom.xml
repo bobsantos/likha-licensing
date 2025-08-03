@@ -165,8 +165,8 @@
                         <suppressionFiles>
                             <suppressionFile>${project.basedir}/.github/dependency-check-suppressions.xml</suppressionFile>
                         </suppressionFiles>
-                        <!-- Use environment variable for API key (fallback to nvdApiKey) -->
-                        <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
+                        <!-- API key will be passed via command line parameter -->
+                        <!-- <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey> -->
                         <!-- Increase delay to avoid rate limiting (default: 2000ms with API key) -->
                         <nvdApiDelay>4000</nvdApiDelay>
                         <!-- Configure retry settings -->

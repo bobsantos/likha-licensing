@@ -221,7 +221,7 @@ jobs:
       - name: Run OWASP Dependency Check
         run: |
           echo "Running OWASP dependency vulnerability scan..."
-          mvn org.owasp:dependency-check-maven:check -Dfrontend.skip=true
+          mvn org.owasp:dependency-check-maven:check -Dfrontend.skip=true -DnvdApiKey="$NVD_API_KEY"
         working-directory: .
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
