@@ -26,6 +26,11 @@
         <postgres.db>${env.POSTGRES_DB}</postgres.db>
         <postgres.user>${env.POSTGRES_USER}</postgres.user>
         <postgres.password>${env.POSTGRES_PASSWORD}</postgres.password>
+        
+        <!-- NVD API Key for OWASP Dependency Check -->
+        <!-- Can be overridden via command line: -DnvdApiKey=your_key -->
+        <!-- Or set via environment variable: NVD_API_KEY -->
+        <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
     </properties>
     
     <dependencyManagement>
@@ -165,8 +170,8 @@
                         <suppressionFiles>
                             <suppressionFile>${project.basedir}/.github/dependency-check-suppressions.xml</suppressionFile>
                         </suppressionFiles>
-                        <!-- API key will be passed via command line parameter -->
-                        <!-- <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey> -->
+                        <!-- API key from environment variable or command line parameter -->
+                        <nvdApiKey>${nvdApiKey}</nvdApiKey>
                         <!-- Increase delay to avoid rate limiting (default: 2000ms with API key) -->
                         <!-- Using 8000ms (8 seconds) to avoid 403 rate limiting errors -->
                         <nvdApiDelay>8000</nvdApiDelay>
