@@ -148,7 +148,8 @@ echo -e "\n${YELLOW}🔒 SECURITY CHECKS${NC}"
 echo "=================="
 
 validate "No high-severity npm vulnerabilities" "cd frontend && npm audit --audit-level=high" "false"
-validate "OWASP dependency check passes" "mvn org.owasp:dependency-check-maven:check -Dfrontend.skip=true -q" "false"
+# OWASP dependency check disabled - using Trivy scanning in CI/CD instead
+echo -e "${GREEN}✅ OWASP dependency check disabled (using Trivy in CI/CD)${NC}"
 
 echo -e "\n${YELLOW}🚀 INTEGRATION TESTS${NC}"
 echo "===================="
