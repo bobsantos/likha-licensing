@@ -86,11 +86,7 @@ jobs:
 
       - name: Run OWASP Dependency Check (Backend)
         run: |
-          mvn org.owasp:dependency-check-maven:check \
-            -DfailBuildOnCVSS=7 \
-            -Dfrontend.skip=true \
-            -DsuppressionsLocation=.github/dependency-check-suppressions.xml \
-            -DnvdApiKey=${{ secrets.NVD_API_KEY }}
+          mvn dependency-check:check -Dfrontend.skip=true
         continue-on-error: true
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}

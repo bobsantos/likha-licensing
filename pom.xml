@@ -154,6 +154,26 @@
                         </dependency>
                     </dependencies>
                 </plugin>
+                
+                <!-- OWASP Dependency Check Plugin -->
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>9.0.9</version>
+                    <configuration>
+                        <failBuildOnCVSS>7</failBuildOnCVSS>
+                        <suppressionFiles>
+                            <suppressionFile>${project.basedir}/.github/dependency-check-suppressions.xml</suppressionFile>
+                        </suppressionFiles>
+                        <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
+                        <formats>
+                            <format>HTML</format>
+                            <format>JSON</format>
+                        </formats>
+                        <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                        <centralAnalyzerEnabled>false</centralAnalyzerEnabled>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
         
