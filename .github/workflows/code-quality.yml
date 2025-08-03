@@ -89,8 +89,11 @@ jobs:
           mvn org.owasp:dependency-check-maven:check \
             -DfailBuildOnCVSS=7 \
             -Dfrontend.skip=true \
-            -DsuppressionsLocation=.github/dependency-check-suppressions.xml
+            -DsuppressionsLocation=.github/dependency-check-suppressions.xml \
+            -DnvdApiKey=${{ secrets.NVD_API_KEY }}
         continue-on-error: true
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
       - name: Install frontend dependencies
         run: npm ci
@@ -180,14 +183,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Debug working directory before Trivy scan
-        run: |
-          echo "Working directory: $(pwd)"
-          echo "Directory contents:"
-          ls -la
-          echo "Docker images:"
-          docker images
-
       - name: Run Trivy vulnerability scanner on image
         uses: aquasecurity/trivy-action@0.28.0
         with:
@@ -197,14 +192,6 @@ jobs:
           exit-code: '0'  # Don't fail the step on vulnerabilities
           severity: 'CRITICAL,HIGH,MEDIUM'
         continue-on-error: true
-
-      - name: Debug working directory after Trivy scan
-        run: |
-          echo "Working directory after scan: $(pwd)"
-          echo "Directory contents after scan:"
-          ls -la
-          echo "Checking for SARIF files:"
-          find . -name "*.sarif" -type f 2>/dev/null || echo "No SARIF files found"
 
       - name: Verify SARIF file exists
         run: |
@@ -292,9 +279,9 @@ jobs:
         working-directory: frontend
         continue-on-error: true
 
-  # Code Coverage Analysis
+  # Test Coverage Analysis (TDD Approach)
   coverage:
-    name: Code Coverage Analysis
+    name: Test Coverage Analysis
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
 
@@ -326,9 +313,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Run tests with coverage
+      - name: Run unit tests with coverage
         run: |
-          mvn clean verify jacoco:report -Pci -Dfrontend.skip=true
+          mvn clean test jacoco:report -Pci -Dfrontend.skip=true
         env:
           SPRING_PROFILES_ACTIVE: ci
           POSTGRES_HOST: localhost
@@ -337,13 +324,44 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
 
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
+      - name: Run integration tests with coverage
+        run: |
+          mvn verify jacoco:report-aggregate -Pci -Dfrontend.skip=true
+        env:
+          SPRING_PROFILES_ACTIVE: ci
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: likha_licensing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
+      - name: Generate coverage report summary
+        run: |
+          mvn jacoco:report -Dfrontend.skip=true
+          echo "## Test Coverage Summary" > coverage-summary.md
+          echo "" >> coverage-summary.md
+          if [ -f "backend/target/site/jacoco/index.html" ]; then
+            echo "Coverage report generated successfully" >> coverage-summary.md
+            echo "- Coverage reports available in artifacts" >> coverage-summary.md
+          else
+            echo "Warning: Coverage report not found" >> coverage-summary.md
+          fi
+
+      - name: Enforce coverage thresholds
+        run: |
+          mvn jacoco:check -Dfrontend.skip=true
+        continue-on-error: false
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          file: backend/target/site/jacoco/jacoco.xml
-          flags: backend
-          name: backend-coverage
-          fail_ci_if_error: false
+          name: jacoco-coverage-report
+          path: |
+            backend/target/site/jacoco/
+            backend/target/jacoco.exec
+            coverage-summary.md
+          retention-days: 30
 
   # Performance Analysis
   performance:
