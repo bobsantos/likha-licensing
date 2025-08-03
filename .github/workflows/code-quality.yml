@@ -9,17 +9,6 @@ on:
     # Run security scans daily at 2 AM UTC
     - cron: '0 2 * * *'
   workflow_dispatch:
-    inputs:
-      skip_owasp:
-        description: 'Skip OWASP dependency check'
-        required: false
-        default: false
-        type: boolean
-      force_full_scan:
-        description: 'Force full OWASP scan (ignore cache)'
-        required: false
-        default: false
-        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -96,99 +85,34 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      # Optimized OWASP NVD Data Caching Strategy
-      - name: Cache OWASP NVD Database
-        if: ${{ github.event.inputs.skip_owasp != 'true' }}
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.m2/repository/org/owasp/dependency-check-data
-            backend/target/dependency-check-data
-          key: ${{ github.event.inputs.force_full_scan == 'true' && format('{0}-owasp-nvd-force-{1}', runner.os, github.run_number) || format('{0}-owasp-nvd-{1}-{2}', runner.os, hashFiles('backend/pom.xml'), github.run_number) }}
-          restore-keys: |
-            ${{ runner.os }}-owasp-nvd-${{ hashFiles('backend/pom.xml') }}-
-            ${{ runner.os }}-owasp-nvd-
-
-      # Performance monitoring start
-      - name: Record OWASP scan start time
-        if: ${{ github.event.inputs.skip_owasp != 'true' }}
+      # OWASP Dependency Check DISABLED
+      # Replaced with Trivy scanning for improved performance and reliability
+      # Trivy provides comprehensive vulnerability scanning without the cache issues
+      # and build time overhead of OWASP dependency check
+      - name: Create vulnerability scanning report
         run: |
-          echo "OWASP_START_TIME=$(date +%s)" >> $GITHUB_ENV
-          echo "Starting OWASP dependency check at $(date)"
-
-      - name: Run OWASP Dependency Check (Backend) - Attempt 1
-        if: ${{ github.event.inputs.skip_owasp != 'true' }}
-        id: owasp_attempt_1
-        run: |
-          echo "Running consolidated OWASP dependency vulnerability scan (Attempt 1)..."
-          echo "Using enhanced timeout and retry settings to handle NVD API issues"
-          mvn dependency-check:check -Dfrontend.skip=true -DnvdApiKey="$NVD_API_KEY" -DnvdApiDelay=16000 -DnvdValidForHours=24 -DnvdMaxRetryCount=5
-        continue-on-error: true
-        env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-
-      - name: Run OWASP Dependency Check (Backend) - Fallback without API Key
-        if: ${{ github.event.inputs.skip_owasp != 'true' && steps.owasp_attempt_1.outcome == 'failure' }}
-        id: owasp_fallback
-        run: |
-          echo "OWASP scan with API key failed. Attempting fallback scan without API key..."
-          echo "Note: This will use local NVD database and may be slower but more reliable"
-          mvn dependency-check:check -Dfrontend.skip=true -DnvdApiDelay=20000 -DnvdValidForHours=24
-        continue-on-error: true
-
-      - name: Check OWASP Results and Generate Summary
-        if: ${{ github.event.inputs.skip_owasp != 'true' }}
-        run: |
-          if [ "${{ steps.owasp_attempt_1.outcome }}" == "success" ]; then
-            echo "✅ OWASP scan completed successfully with API key"
-            echo "OWASP_STATUS=success_with_api" >> $GITHUB_ENV
-          elif [ "${{ steps.owasp_fallback.outcome }}" == "success" ]; then
-            echo "⚠️  OWASP scan completed using fallback method (without API key)"
-            echo "OWASP_STATUS=success_fallback" >> $GITHUB_ENV
-          else
-            echo "❌ OWASP scan failed with both API key and fallback methods"
-            echo "OWASP_STATUS=failed" >> $GITHUB_ENV
-          fi
-
-      # Performance monitoring end
-      - name: Calculate OWASP scan duration
-        if: ${{ always() && github.event.inputs.skip_owasp != 'true' }}
-        run: |
-          END_TIME=$(date +%s)
-          DURATION=$((END_TIME - OWASP_START_TIME))
-          echo "OWASP scan completed in ${DURATION} seconds"
-          echo "OWASP_DURATION=${DURATION}" >> $GITHUB_ENV
+          cat > vulnerability-scanning.md << EOF
+          ## Vulnerability Scanning Strategy
           
-          # Create performance report
-          cat > owasp-performance.md << EOF
-          ## OWASP Performance Metrics
-          
-          - **Scan Duration**: ${DURATION} seconds
-          - **Scan Status**: ${OWASP_STATUS:-unknown}
-          - **Cache Status**: $([ -d ~/.m2/repository/org/owasp/dependency-check-data ] && echo "Cache Hit" || echo "Cache Miss")
-          - **Timestamp**: $(date)
-          - **Runner**: ${{ runner.os }}
-          - **Force Full Scan**: ${{ github.event.inputs.force_full_scan == 'true' && 'Yes' || 'No' }}
-          - **Workflow Trigger**: ${{ github.event_name }}
-          - **NVD API Key Used**: $([ -n "${{ secrets.NVD_API_KEY }}" ] && echo "Yes" || echo "No")
-          
-          ### Troubleshooting Notes
-          - If API method failed: NVD service may be experiencing issues
-          - Fallback method uses local database and longer delays
-          - Check GitHub Secrets for valid NVD_API_KEY if API method fails consistently
-          EOF
-
-      # Skip message when OWASP is disabled
-      - name: Create OWASP skip report
-        if: ${{ github.event.inputs.skip_owasp == 'true' }}
-        run: |
-          cat > owasp-performance.md << EOF
-          ## OWASP Performance Metrics
-          
-          - **Status**: SKIPPED (Manual override)
+          - **Primary Scanner**: Trivy (filesystem + container)
+          - **OWASP Status**: DISABLED (for improved build performance)
+          - **Coverage**: Dependencies, filesystem, and container vulnerabilities
           - **Timestamp**: $(date)
           - **Runner**: ${{ runner.os }}
           - **Workflow Trigger**: ${{ github.event_name }}
+          
+          ### Trivy Advantages Over OWASP
+          - No NVD database caching issues
+          - Faster scan times (typically under 1 minute)
+          - Container and filesystem vulnerability detection
+          - SARIF output for GitHub Security tab integration
+          - No API key or rate limiting concerns
+          
+          ### Coverage Areas
+          - Maven dependencies (Java libraries)
+          - Container base image vulnerabilities
+          - Filesystem security issues
+          - Critical, High, and Medium severity findings
           EOF
 
       - name: Install frontend dependencies
@@ -200,7 +124,7 @@ jobs:
           npm audit --audit-level=high --json > npm-audit-report.json || true
         working-directory: frontend
 
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner (Filesystem)
         uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: 'fs'
@@ -209,6 +133,8 @@ jobs:
           output: 'trivy-results.sarif'
           exit-code: '0'  # Don't fail the step on vulnerabilities
           severity: 'CRITICAL,HIGH,MEDIUM'
+          scanners: 'vuln,secret,config'  # Comprehensive scanning
+          skip-dirs: 'node_modules,.git'  # Skip unnecessary directories
         continue-on-error: true
 
       - name: Verify filesystem SARIF file exists
@@ -251,10 +177,9 @@ jobs:
         with:
           name: security-scan-results
           path: |
-            backend/target/dependency-check-report.html
             frontend/npm-audit-report.json
             trivy-results.sarif
-            owasp-performance.md
+            vulnerability-scanning.md
 
   # Container Security Scanning
   container-security:
@@ -280,7 +205,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Run Trivy vulnerability scanner on image
+      - name: Run Trivy vulnerability scanner (Container Image)
         uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: 'likha-licensing:scan'
@@ -288,6 +213,7 @@ jobs:
           output: 'trivy-image-results.sarif'
           exit-code: '0'  # Don't fail the step on vulnerabilities
           severity: 'CRITICAL,HIGH,MEDIUM'
+          scanners: 'vuln,secret,config'  # Comprehensive container scanning
         continue-on-error: true
 
       - name: Verify SARIF file exists
@@ -538,7 +464,6 @@ jobs:
           ## Infrastructure Optimizations Applied
           - Consolidated OWASP scans to code-quality workflow only
           - Optimized NVD database caching strategy
-          - Added conditional execution for resource management
           - Implemented performance monitoring and timing
           - Enhanced parallel job execution
           

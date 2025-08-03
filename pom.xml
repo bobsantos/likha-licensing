@@ -27,10 +27,6 @@
         <postgres.user>${env.POSTGRES_USER}</postgres.user>
         <postgres.password>${env.POSTGRES_PASSWORD}</postgres.password>
         
-        <!-- NVD API Key for OWASP Dependency Check -->
-        <!-- Can be overridden via command line: -DnvdApiKey=your_key -->
-        <!-- Or set via environment variable: NVD_API_KEY -->
-        <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
     </properties>
     
     <dependencyManagement>
@@ -53,7 +49,7 @@
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
-                <version>42.7.4</version>
+                <version>42.7.7</version>
             </dependency>
             <!-- Flyway Core for database migrations -->
             <dependency>
@@ -155,53 +151,11 @@
                         <dependency>
                             <groupId>org.postgresql</groupId>
                             <artifactId>postgresql</artifactId>
-                            <version>42.7.4</version>
+                            <version>42.7.7</version>
                         </dependency>
                     </dependencies>
                 </plugin>
                 
-                <!-- OWASP Dependency Check Plugin -->
-                <plugin>
-                    <groupId>org.owasp</groupId>
-                    <artifactId>dependency-check-maven</artifactId>
-                    <version>12.1.0</version>
-                    <configuration>
-                        <failBuildOnCVSS>7</failBuildOnCVSS>
-                        <suppressionFiles>
-                            <suppressionFile>${project.basedir}/.github/dependency-check-suppressions.xml</suppressionFile>
-                        </suppressionFiles>
-                        <!-- API key from environment variable or command line parameter -->
-                        <nvdApiKey>${nvdApiKey}</nvdApiKey>
-                        <!-- Aggressive delay to avoid NVD API 403/404 errors -->
-                        <!-- Increased from 8000ms to 16000ms (16 seconds) based on community recommendations -->
-                        <nvdApiDelay>16000</nvdApiDelay>
-                        <!-- Configure retry settings -->
-                        <nvdMaxRetryCount>5</nvdMaxRetryCount>
-                        <!-- Enable data directory caching for better performance -->
-                        <dataDirectory>${project.build.directory}/dependency-check-data</dataDirectory>
-                        <!-- Add valid for hours to reduce API calls -->
-                        <nvdValidForHours>24</nvdValidForHours>
-                        <formats>
-                            <format>HTML</format>
-                            <format>JSON</format>
-                        </formats>
-                        <!-- Disable analyzers that aren't needed for typical Java projects -->
-                        <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                        <centralAnalyzerEnabled>false</centralAnalyzerEnabled>
-                        <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
-                        <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
-                        <pyDistributionAnalyzerEnabled>false</pyDistributionAnalyzerEnabled>
-                        <pyPackageAnalyzerEnabled>false</pyPackageAnalyzerEnabled>
-                        <rubygemsAnalyzerEnabled>false</rubygemsAnalyzerEnabled>
-                        <cocoapodsAnalyzerEnabled>false</cocoapodsAnalyzerEnabled>
-                        <bundleAuditAnalyzerEnabled>false</bundleAuditAnalyzerEnabled>
-                        <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
-                        <nugetconfAnalyzerEnabled>false</nugetconfAnalyzerEnabled>
-                        <composerAnalyzerEnabled>false</composerAnalyzerEnabled>
-                        <autoconfAnalyzerEnabled>false</autoconfAnalyzerEnabled>
-                        <cmakeAnalyzerEnabled>false</cmakeAnalyzerEnabled>
-                    </configuration>
-                </plugin>
             </plugins>
         </pluginManagement>
         
