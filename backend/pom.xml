@@ -308,6 +308,15 @@ To initialize frontend, run from project root:
                                 <schema>public</schema>
                             </schemas>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <id>migrate-before-test</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>migrate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

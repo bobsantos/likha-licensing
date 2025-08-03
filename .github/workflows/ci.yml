@@ -87,7 +87,7 @@ jobs:
           mvn clean test -Pci -Dfrontend.skip=true
         working-directory: .
         env:
-          SPRING_PROFILES_ACTIVE: test
+          SPRING_PROFILES_ACTIVE: ci
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
           POSTGRES_DB: likha_licensing
@@ -100,7 +100,7 @@ jobs:
           mvn verify -Pci -Dfrontend.skip=true -Dskip.unit.tests=true
         working-directory: .
         env:
-          SPRING_PROFILES_ACTIVE: test
+          SPRING_PROFILES_ACTIVE: ci
 
       - name: Generate test coverage report
         run: |
@@ -307,7 +307,7 @@ jobs:
           mvn clean package -Pci
         working-directory: .
         env:
-          SPRING_PROFILES_ACTIVE: test
+          SPRING_PROFILES_ACTIVE: ci
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
           POSTGRES_DB: likha_licensing
