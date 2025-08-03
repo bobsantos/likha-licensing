@@ -19,6 +19,13 @@
         <spring.boot.version>3.2.0</spring.boot.version>
         <spring-modulith.version>1.1.1</spring-modulith.version>
         <frontend.skip>false</frontend.skip>
+        
+        <!-- Database connection defaults for local development -->
+        <postgres.host>${env.POSTGRES_HOST}</postgres.host>
+        <postgres.port>${env.POSTGRES_PORT}</postgres.port>
+        <postgres.db>${env.POSTGRES_DB}</postgres.db>
+        <postgres.user>${env.POSTGRES_USER}</postgres.user>
+        <postgres.password>${env.POSTGRES_PASSWORD}</postgres.password>
     </properties>
     
     <dependencyManagement>
