@@ -8,6 +8,18 @@ on:
   schedule:
     # Run security scans daily at 2 AM UTC
     - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      skip_owasp:
+        description: 'Skip OWASP dependency check'
+        required: false
+        default: false
+        type: boolean
+      force_full_scan:
+        description: 'Force full OWASP scan (ignore cache)'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -84,12 +96,68 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Run OWASP Dependency Check (Backend)
+      # Optimized OWASP NVD Data Caching Strategy
+      - name: Cache OWASP NVD Database
+        if: ${{ github.event.inputs.skip_owasp != 'true' }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository/org/owasp/dependency-check-data
+            backend/target/dependency-check-data
+          key: ${{ github.event.inputs.force_full_scan == 'true' && format('{0}-owasp-nvd-force-{1}', runner.os, github.run_number) || format('{0}-owasp-nvd-{1}-{2}', runner.os, hashFiles('backend/pom.xml'), github.run_number) }}
+          restore-keys: |
+            ${{ runner.os }}-owasp-nvd-${{ hashFiles('backend/pom.xml') }}-
+            ${{ runner.os }}-owasp-nvd-
+
+      # Performance monitoring start
+      - name: Record OWASP scan start time
+        if: ${{ github.event.inputs.skip_owasp != 'true' }}
         run: |
-          mvn dependency-check:check -Dfrontend.skip=true -DnvdApiKey="$NVD_API_KEY" -DnvdApiDelay=8000
+          echo "OWASP_START_TIME=$(date +%s)" >> $GITHUB_ENV
+          echo "Starting OWASP dependency check at $(date)"
+
+      - name: Run OWASP Dependency Check (Backend)
+        if: ${{ github.event.inputs.skip_owasp != 'true' }}
+        run: |
+          echo "Running consolidated OWASP dependency vulnerability scan..."
+          mvn dependency-check:check -Dfrontend.skip=true -DnvdApiKey="$NVD_API_KEY" -DnvdApiDelay=8000 -DnvdValidForHours=24
         continue-on-error: true
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+
+      # Performance monitoring end
+      - name: Calculate OWASP scan duration
+        if: ${{ always() && github.event.inputs.skip_owasp != 'true' }}
+        run: |
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - OWASP_START_TIME))
+          echo "OWASP scan completed in ${DURATION} seconds"
+          echo "OWASP_DURATION=${DURATION}" >> $GITHUB_ENV
+          
+          # Create performance report
+          cat > owasp-performance.md << EOF
+          ## OWASP Performance Metrics
+          
+          - **Scan Duration**: ${DURATION} seconds
+          - **Cache Status**: $([ -d ~/.m2/repository/org/owasp/dependency-check-data ] && echo "Cache Hit" || echo "Cache Miss")
+          - **Timestamp**: $(date)
+          - **Runner**: ${{ runner.os }}
+          - **Force Full Scan**: ${{ github.event.inputs.force_full_scan == 'true' && 'Yes' || 'No' }}
+          - **Workflow Trigger**: ${{ github.event_name }}
+          EOF
+
+      # Skip message when OWASP is disabled
+      - name: Create OWASP skip report
+        if: ${{ github.event.inputs.skip_owasp == 'true' }}
+        run: |
+          cat > owasp-performance.md << EOF
+          ## OWASP Performance Metrics
+          
+          - **Status**: SKIPPED (Manual override)
+          - **Timestamp**: $(date)
+          - **Runner**: ${{ runner.os }}
+          - **Workflow Trigger**: ${{ github.event_name }}
+          EOF
 
       - name: Install frontend dependencies
         run: npm ci
@@ -154,6 +222,7 @@ jobs:
             backend/target/dependency-check-report.html
             frontend/npm-audit-report.json
             trivy-results.sarif
+            owasp-performance.md
 
   # Container Security Scanning
   container-security:
@@ -405,3 +474,49 @@ jobs:
             echo "No JMH benchmarks found"
           fi
         continue-on-error: true
+
+  # Workflow Summary and Resource Optimization Report
+  workflow-summary:
+    name: Workflow Summary
+    runs-on: ubuntu-latest
+    needs: [code-analysis, security-scan, container-security, license-check, coverage, performance]
+    if: always()
+
+    steps:
+      - name: Generate workflow summary
+        run: |
+          cat > workflow-summary.md << EOF
+          # Code Quality Workflow Summary
+          
+          ## Job Results
+          - **Code Analysis**: ${{ needs.code-analysis.result }}
+          - **Security Scan**: ${{ needs.security-scan.result }}
+          - **Container Security**: ${{ needs.container-security.result }}
+          - **License Check**: ${{ needs.license-check.result }}
+          - **Coverage**: ${{ needs.coverage.result }}
+          - **Performance**: ${{ needs.performance.result }}
+          
+          ## Workflow Metadata
+          - **Trigger**: ${{ github.event_name }}
+          - **Branch**: ${{ github.ref_name }}
+          - **Commit**: ${{ github.sha }}
+          - **Runner**: ${{ runner.os }}
+          - **Workflow Run**: #${{ github.run_number }}
+          
+          ## Infrastructure Optimizations Applied
+          - Consolidated OWASP scans to code-quality workflow only
+          - Optimized NVD database caching strategy
+          - Added conditional execution for resource management
+          - Implemented performance monitoring and timing
+          - Enhanced parallel job execution
+          
+          EOF
+          
+          echo "## Summary" >> $GITHUB_STEP_SUMMARY
+          cat workflow-summary.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload workflow summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-summary
+          path: workflow-summary.md
