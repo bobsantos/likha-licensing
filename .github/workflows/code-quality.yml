@@ -86,7 +86,7 @@ jobs:
 
       - name: Run OWASP Dependency Check (Backend)
         run: |
-          mvn dependency-check:check -Dfrontend.skip=true
+          mvn dependency-check:check -Dfrontend.skip=true -DnvdApiKey="$NVD_API_KEY" -DnvdApiDelay=8000
         continue-on-error: true
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}

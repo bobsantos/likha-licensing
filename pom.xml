@@ -168,7 +168,8 @@
                         <!-- API key will be passed via command line parameter -->
                         <!-- <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey> -->
                         <!-- Increase delay to avoid rate limiting (default: 2000ms with API key) -->
-                        <nvdApiDelay>4000</nvdApiDelay>
+                        <!-- Using 8000ms (8 seconds) to avoid 403 rate limiting errors -->
+                        <nvdApiDelay>8000</nvdApiDelay>
                         <!-- Configure retry settings -->
                         <nvdMaxRetryCount>3</nvdMaxRetryCount>
                         <!-- Enable data directory caching for better performance -->
