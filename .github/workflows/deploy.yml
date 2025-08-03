@@ -1,0 +1,304 @@
+name: Deploy Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  JAVA_VERSION: '21'
+  NODE_VERSION: '20'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Check if deployment is enabled
+  check-deployment-status:
+    name: Check Deployment Status
+    runs-on: ubuntu-latest
+    outputs:
+      deploy-enabled: ${{ steps.check.outputs.deploy-enabled }}
+      skip-reason: ${{ steps.check.outputs.skip-reason }}
+    
+    steps:
+      - name: Check deployment configuration
+        id: check
+        run: |
+          if [[ "${{ vars.DEPLOY_ENABLED }}" == "true" ]]; then
+            echo "deploy-enabled=true" >> $GITHUB_OUTPUT
+            echo "skip-reason=" >> $GITHUB_OUTPUT
+            echo "✅ Deployment is enabled via DEPLOY_ENABLED repository variable"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "deploy-enabled=true" >> $GITHUB_OUTPUT
+            echo "skip-reason=" >> $GITHUB_OUTPUT
+            echo "✅ Deployment enabled via manual workflow_dispatch trigger"
+          else
+            echo "deploy-enabled=false" >> $GITHUB_OUTPUT
+            echo "skip-reason=DEPLOY_ENABLED repository variable is not set to 'true' and workflow was not manually triggered" >> $GITHUB_OUTPUT
+            echo "⚠️  Deployment is disabled. Set DEPLOY_ENABLED repository variable to 'true' or trigger manually to enable."
+            echo "📖 See repository Settings > Secrets and variables > Actions > Variables tab"
+          fi
+
+  # Build and Test (same as CI but for deployment)
+  build:
+    name: Build & Test for Deployment
+    runs-on: ubuntu-latest
+    needs: check-deployment-status
+    if: needs.check-deployment-status.outputs.deploy-enabled == 'true'
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: frontend
+
+      - name: Run all tests
+        run: |
+          mvn clean verify -Pci
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
+      - name: Build application package
+        run: |
+          mvn clean package -Pprod -DskipTests
+        working-directory: .
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,prefix={{branch}}-
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Upload application artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-jar
+          path: backend/target/*.jar
+          retention-days: 30
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [check-deployment-status, build]
+    if: needs.check-deployment-status.outputs.deploy-enabled == 'true' && (github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'))
+    environment:
+      name: staging
+      url: https://staging.likha-licensing.app
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to ECS Staging
+        run: |
+          echo "Deploying to ECS Staging..."
+          # This would contain your ECS deployment commands
+          # aws ecs update-service --cluster staging-cluster --service likha-licensing --force-new-deployment
+          echo "Deployment to staging would happen here"
+
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests against staging environment..."
+          # Add smoke test commands here
+          # curl -f https://staging.likha-licensing.app/actuator/health
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "Successfully deployed to staging environment"
+
+  # Deploy to Production (only on tags or manual trigger)
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [check-deployment-status, build, deploy-staging]
+    if: needs.check-deployment-status.outputs.deploy-enabled == 'true' && (startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'))
+    environment:
+      name: production
+      url: https://app.likha-licensing.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to ECS Production
+        run: |
+          echo "Deploying to ECS Production..."
+          # This would contain your ECS deployment commands
+          # aws ecs update-service --cluster production-cluster --service likha-licensing --force-new-deployment
+          echo "Deployment to production would happen here"
+
+      - name: Run production smoke tests
+        run: |
+          echo "Running smoke tests against production environment..."
+          # Add production smoke test commands here
+          # curl -f https://app.likha-licensing.com/actuator/health
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          body: |
+            ## What's Changed
+            - Automated release from tag ${{ github.ref_name }}
+            - Docker image: ${{ needs.build.outputs.image-tag }}
+            
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/v1.0.0...${{ github.ref_name }}
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "Successfully deployed to production environment"
+
+  # Rollback capability
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    if: failure() && (needs.deploy-staging.result == 'failure' || needs.deploy-production.result == 'failure')
+    needs: [check-deployment-status, deploy-staging, deploy-production]
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Rollback deployment
+        run: |
+          echo "Rolling back deployment..."
+          # Add rollback commands here
+          # aws ecs update-service --cluster $CLUSTER --service $SERVICE --task-definition $PREVIOUS_TASK_DEF
+
+  # Show deployment status when disabled
+  deployment-disabled:
+    name: Deployment Disabled
+    runs-on: ubuntu-latest
+    needs: check-deployment-status
+    if: needs.check-deployment-status.outputs.deploy-enabled == 'false'
+    
+    steps:
+      - name: Show deployment disabled message
+        run: |
+          echo "🚫 Deployment is currently disabled"
+          echo "📋 Reason: ${{ needs.check-deployment-status.outputs.skip-reason }}"
+          echo ""
+          echo "To enable deployment:"
+          echo "1. Go to repository Settings > Secrets and variables > Actions"
+          echo "2. Click on the 'Variables' tab"
+          echo "3. Add a new repository variable named 'DEPLOY_ENABLED' with value 'true'"
+          echo "4. Or manually trigger this workflow using the 'Run workflow' button"
+          echo ""
+          echo "For more information, see the project README.md"

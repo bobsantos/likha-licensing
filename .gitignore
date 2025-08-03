@@ -1,5 +1,6 @@
 settings.local.json
 scratch/
+target/
 
 # Environment Configuration
 .env
@@ -32,6 +33,7 @@ logs/
 # Maven
 backend/target/
 !backend/target/classes/static/
+effective-pom.xml
 
 # Node.js
 frontend/node_modules/

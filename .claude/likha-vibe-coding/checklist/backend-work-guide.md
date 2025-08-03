@@ -4,16 +4,18 @@ This guide provides best practices and references for @agent-backend when workin
 
 ## Core References
 
-- **Test-Driven Development**: @.claude/likha-vibe-coding/data/tdd.md
-- **Backend Tech Stack**: @.claude/likha-vibe-coding/data/backend-tech-stack.md
-- **Backend Best Practices**: @.claude/likha-vibe-coding/data/backend-best-practices.md
-- **Domain-Driven Design**: @.claude/likha-vibe-coding/data/ddd.md
-- **Flyway Migration Best Practices**: @.claude/likha-vibe-coding/data/flyway.md
+- **Test-Driven Development**: .claude/likha-vibe-coding/data/tdd.md
+- **Backend Tech Stack**: .claude/likha-vibe-coding/data/backend-tech-stack.md
+- **Backend Best Practices**: .claude/likha-vibe-coding/data/backend-best-practices.md
+- **Domain-Driven Design**: .claude/likha-vibe-coding/data/ddd.md
+- **Flyway Migration Best Practices**: .claude/likha-vibe-coding/data/flyway.md
 
 ## Backend Task Approach
 
 ### MANDATORY Pre-Implementation Checklist
+
 Before writing ANY implementation code, you MUST complete these steps IN ORDER:
+
 - [ ] Read and understand the full task requirements from todo.md
 - [ ] **Search for existing functionality** - Use Glob and Grep tools to find:
   - [ ] Similar classes, services, or configurations
@@ -35,12 +37,14 @@ Before writing ANY implementation code, you MUST complete these steps IN ORDER:
 ### 1. Pre-Implementation Phase
 
 **Understand the Task Context**
+
 - Review acceptance criteria and business requirements
 - Identify domain boundaries and bounded contexts
 - Plan API contracts and data models
 - Check which supporting teams are needed
 
 **Test-First Development (TDD)**
+
 - Write failing tests first (Red phase)
 - Implement minimal code to pass (Green phase)
 - Refactor for clarity and design (Refactor phase)
@@ -49,12 +53,14 @@ Before writing ANY implementation code, you MUST complete these steps IN ORDER:
 ### 2. Implementation Guidelines
 
 **Spring Boot Architecture**
+
 - Follow Spring Modulith patterns for modular monolith
 - Use Spring JDBC instead of JPA/Hibernate
 - Implement proper transaction boundaries
 - Apply dependency injection best practices
 
 **Domain-Driven Design**
+
 - **Reference**: @docs/domain/domains.md for bounded contexts, domain events, and architecture patterns
 - Identify and implement aggregate roots
 - Use value objects for immutable data
@@ -62,12 +68,14 @@ Before writing ANY implementation code, you MUST complete these steps IN ORDER:
 - Maintain clear bounded contexts
 
 **REST API Development**
+
 - Follow RESTful conventions
 - Implement proper HTTP status codes
 - Use OpenAPI 3.0 for documentation
 - Version APIs appropriately
 
 **Database Operations**
+
 - Use Spring JDBC templates
 - Implement repository pattern
 - Write efficient SQL queries
@@ -78,6 +86,7 @@ Before writing ANY implementation code, you MUST complete these steps IN ORDER:
 **CRITICAL**: Always collaborate with supporting teams when tasks require it!
 
 **When to Collaborate with @agent-infra:**
+
 - Database schema changes
 - Connection pool configuration
 - Infrastructure dependencies
@@ -85,6 +94,7 @@ Before writing ANY implementation code, you MUST complete these steps IN ORDER:
 - Performance optimization
 
 **When to Collaborate with @agent-security:**
+
 - Authentication/authorization implementation
 - API security controls
 - Data encryption requirements
@@ -93,6 +103,7 @@ Before writing ANY implementation code, you MUST complete these steps IN ORDER:
 - Security review for any endpoints handling sensitive data
 
 **When to Collaborate with @agent-frontend:**
+
 - API contract definition
 - CORS requirements
 - Response format optimization
@@ -100,6 +111,7 @@ Before writing ANY implementation code, you MUST complete these steps IN ORDER:
 - WebSocket or SSE implementation
 
 **When to Collaborate with @agent-designer:**
+
 - User-facing error messages
 - API response structure for UI
 - Data validation rules
@@ -108,27 +120,30 @@ Before writing ANY implementation code, you MUST complete these steps IN ORDER:
 ### 4. Testing Strategy
 
 **Unit Testing**
+
 ```java
 @Test
 void shouldCalculateLicenseFee() {
     // Arrange
     var license = new License(/*...*/);
-    
+
     // Act
     var fee = licenseService.calculateFee(license);
-    
+
     // Assert
     assertThat(fee).isEqualTo(expectedFee);
 }
 ```
 
 **Integration Testing**
+
 - Use @SpringBootTest for full context
 - Testcontainers for database testing
 - Mock external services with WireMock
 - Validate multi-tenant isolation
 
 **Contract Testing**
+
 - Spring Cloud Contract for provider testing
 - Validate API contracts with consumers
 - Test error scenarios thoroughly
@@ -136,12 +151,14 @@ void shouldCalculateLicenseFee() {
 ### 5. Code Quality Standards
 
 **Clean Code Principles**
+
 - Single Responsibility Principle
 - Clear method and variable names
 - Avoid deep nesting
 - Extract complex logic to methods
 
 **Error Handling**
+
 ```java
 @ExceptionHandler(ResourceNotFoundException.class)
 public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
@@ -151,6 +168,7 @@ public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex
 ```
 
 **Logging Standards**
+
 ```java
 log.info("Processing license request for tenant: {}", tenantId);
 log.error("Failed to process payment", exception);
@@ -159,15 +177,16 @@ log.error("Failed to process payment", exception);
 ## Common Backend Patterns
 
 ### Multi-Tenant Context
+
 ```java
 @Component
 public class TenantContextHolder {
     private static final ThreadLocal<String> TENANT_ID = new ThreadLocal<>();
-    
+
     public static void setTenantId(String tenantId) {
         TENANT_ID.set(tenantId);
     }
-    
+
     public static String getTenantId() {
         return TENANT_ID.get();
     }
@@ -175,11 +194,12 @@ public class TenantContextHolder {
 ```
 
 ### Repository Pattern
+
 ```java
 @Repository
 public class LicenseRepository {
     private final JdbcTemplate jdbcTemplate;
-    
+
     public Optional<License> findById(UUID id) {
         String sql = "SELECT * FROM licenses WHERE id = ? AND tenant_id = ?";
         return jdbcTemplate.query(sql, new LicenseRowMapper(), id, getTenantId())
@@ -189,26 +209,27 @@ public class LicenseRepository {
 ```
 
 ### Service Layer
+
 ```java
 @Service
 @Transactional
 public class LicenseService {
     private final LicenseRepository repository;
     private final EventPublisher eventPublisher;
-    
+
     public License createLicense(CreateLicenseRequest request) {
         // Validate business rules
         validateLicenseRequest(request);
-        
+
         // Create domain object
         var license = License.create(request);
-        
+
         // Persist
         var saved = repository.save(license);
-        
+
         // Publish domain event
         eventPublisher.publish(new LicenseCreatedEvent(saved));
-        
+
         return saved;
     }
 }
@@ -217,12 +238,14 @@ public class LicenseService {
 ## Security Considerations
 
 **Authentication & Authorization**
+
 - JWT token validation
 - Role-based access control
 - API key management
 - OAuth2 integration when needed
 
 **Data Security**
+
 - Input validation and sanitization
 - SQL injection prevention
 - XSS protection
@@ -231,12 +254,14 @@ public class LicenseService {
 ## Performance Guidelines
 
 **Query Optimization**
+
 - Use proper indexes
 - Avoid N+1 queries
 - Implement pagination
 - Cache frequently accessed data
 
 **Application Performance**
+
 - Connection pool tuning
 - Async processing where appropriate
 - Proper transaction scope
@@ -245,10 +270,11 @@ public class LicenseService {
 ## Documentation Standards
 
 **Code Documentation**
+
 ```java
 /**
  * Calculates the license fee based on usage and tier.
- * 
+ *
  * @param license the license to calculate fee for
  * @param usage the current usage metrics
  * @return the calculated fee
@@ -260,6 +286,7 @@ public BigDecimal calculateFee(License license, UsageMetrics usage) {
 ```
 
 **API Documentation**
+
 - OpenAPI annotations
 - Clear endpoint descriptions
 - Request/response examples
@@ -268,12 +295,14 @@ public BigDecimal calculateFee(License license, UsageMetrics usage) {
 ## Monitoring & Observability
 
 **Metrics to Track**
+
 - API response times
 - Error rates by endpoint
 - Database query performance
 - Business metrics (licenses created, etc.)
 
 **Health Checks**
+
 ```java
 @Component
 public class DatabaseHealthIndicator implements HealthIndicator {
@@ -288,12 +317,14 @@ public class DatabaseHealthIndicator implements HealthIndicator {
 ## Continuous Improvement
 
 **Code Reviews**
+
 - Focus on business logic correctness
 - Check for security vulnerabilities
 - Verify test coverage
 - Ensure documentation is updated
 
 **Learning & Sharing**
+
 - Document new patterns discovered
 - Share knowledge with team
 - Keep up with Spring Boot updates

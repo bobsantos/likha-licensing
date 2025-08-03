@@ -1,0 +1,339 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [ opened, synchronize, reopened, ready_for_review ]
+  push:
+    branches: [ main, develop ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '21'
+  MAVEN_OPTS: -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.class=standard -Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.httpconnectionManager.ttlSeconds=125
+  NODE_VERSION: '20'
+  NPM_VERSION: '10.2.3'
+
+jobs:
+  # Backend CI Job
+  backend:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: likha_licensing
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/app/likha
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Validate Maven project structure
+        run: |
+          echo "Validating project structure..."
+          mvn validate -Dskip.frontend=true
+        working-directory: .
+
+      - name: Initialize test database with Flyway migrations
+        run: |
+          echo "Initializing test database with schema and data..."
+          mvn flyway:migrate -Pci -Dfrontend.skip=true
+        working-directory: .
+        env:
+          SPRING_PROFILES_ACTIVE: ci
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: likha_licensing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
+      - name: Run backend tests
+        run: |
+          echo "Running backend tests with CI profile..."
+          mvn clean test -Pci -Dfrontend.skip=true
+        working-directory: .
+        env:
+          SPRING_PROFILES_ACTIVE: ci
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: likha_licensing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
+      - name: Run integration tests
+        run: |
+          echo "Running integration tests..."
+          mvn verify -Pci -Dfrontend.skip=true -Dskip.unit.tests=true
+        working-directory: .
+        env:
+          SPRING_PROFILES_ACTIVE: ci
+
+      - name: Generate test coverage report
+        run: |
+          echo "Generating JaCoCo coverage report..."
+          mvn jacoco:report -Dfrontend.skip=true || echo "JaCoCo report generation completed with warnings"
+        working-directory: .
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: |
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
+            backend/target/site/jacoco/
+
+      - name: Build backend application
+        run: |
+          echo "Building backend application..."
+          mvn clean compile -Dfrontend.skip=true
+        working-directory: .
+
+  # Frontend CI Job  
+  frontend:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install frontend dependencies
+        run: |
+          echo "Installing frontend dependencies..."
+          npm ci
+        working-directory: frontend
+
+      - name: Run ESLint
+        run: |
+          echo "Running ESLint..."
+          npm run lint
+        working-directory: frontend
+
+      - name: Run TypeScript type checking
+        run: |
+          echo "Running TypeScript type checking..."
+          npx tsc --noEmit
+        working-directory: frontend
+
+      - name: Run frontend tests (if available)
+        run: |
+          if npm run | grep -q "test"; then
+            echo "Running frontend tests..."
+            npm run test
+          else
+            echo "No test script found, skipping frontend tests"
+          fi
+        working-directory: frontend
+
+      - name: Build frontend application
+        run: |
+          echo "Building frontend application..."
+          npm run build
+        working-directory: frontend
+
+      - name: Upload frontend build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+
+  # Security and Quality Checks
+  security:
+    name: Security & Quality
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+
+      - name: Set up Node.js for frontend security scan
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies for security scan
+        run: npm ci
+        working-directory: frontend
+
+      - name: Run npm audit
+        run: |
+          echo "Running npm security audit..."
+          npm audit --audit-level=moderate
+        working-directory: frontend
+        continue-on-error: true
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            frontend/npm-audit-report.json
+
+  # Full Integration Build (Optional - runs after all checks pass)
+  integration-build:
+    name: Full Integration Build
+    runs-on: ubuntu-latest
+    needs: [backend, frontend, security]
+    if: github.event.pull_request.draft == false
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: likha_licensing
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Download frontend artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+
+      - name: Initialize test database with Flyway migrations
+        run: |
+          echo "Initializing test database with schema and data..."
+          mvn flyway:migrate -Pci -Dfrontend.skip=true
+        working-directory: .
+        env:
+          SPRING_PROFILES_ACTIVE: ci
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: likha_licensing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
+      - name: Build complete application (backend + frontend)
+        run: |
+          echo "Building complete application with frontend..."
+          mvn clean package -Pci
+        working-directory: .
+        env:
+          SPRING_PROFILES_ACTIVE: ci
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: likha_licensing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
+      - name: Upload final build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-jar
+          path: backend/target/*.jar
+
+  # Summary job for PR status checks
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [backend, frontend, security, integration-build]
+    if: always() && github.event.pull_request.draft == false
+
+    steps:
+      - name: Check all jobs success
+        run: |
+          if [[ "${{ needs.backend.result }}" == "success" && 
+                "${{ needs.frontend.result }}" == "success" && 
+                "${{ needs.security.result }}" == "success" && 
+                "${{ needs.integration-build.result }}" == "success" ]]; then
+            echo "All CI jobs completed successfully!"
+            exit 0
+          else
+            echo "One or more CI jobs failed:"
+            echo "Backend: ${{ needs.backend.result }}"
+            echo "Frontend: ${{ needs.frontend.result }}"
+            echo "Security: ${{ needs.security.result }}"
+            echo "Integration Build: ${{ needs.integration-build.result }}"
+            exit 1
+          fi

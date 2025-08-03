@@ -63,7 +63,7 @@ SELECT * FROM tenant_default.contract_versions;
 CREATE TABLE IF NOT EXISTS contract_access_log_v2_backup AS 
 SELECT * FROM tenant_default.contract_access_log;
 
-RAISE NOTICE 'V2 data backed up to *_v2_backup tables';
+DO $$ BEGIN RAISE NOTICE 'V2 data backed up to *_v2_backup tables'; END $$;
 
 -- ==============================================================================
 -- DEFAULT ENTITIES CREATION
@@ -153,37 +153,41 @@ END $$;
 -- MAIN DATA MIGRATION
 -- ==============================================================================
 
--- Begin transaction for atomic migration
-BEGIN;
-
 -- Step 1: Migrate V2 contracts to V3 business_contracts
-INSERT INTO tenant_default.business_contracts (
-    id,
-    tenant_id,
-    licensor_id,
-    licensee_id,
-    brand_id,
-    contract_number,
-    title,
-    description,
-    contract_type,
-    license_scope,
-    total_value,
-    currency,
-    effective_date,
-    expiration_date,
-    status,
-    approval_status,
-    execution_status,
-    compliance_status,
-    notes,
-    tags,
-    created_by_user_id,
-    updated_by_user_id,
-    created_at,
-    updated_at,
-    deleted_at
-)
+-- Only if there are contracts to migrate
+DO $$
+DECLARE
+    contract_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO contract_count FROM tenant_default.contracts WHERE deleted_at IS NULL;
+    
+    IF contract_count > 0 THEN
+        INSERT INTO tenant_default.business_contracts (
+            id,
+            tenant_id,
+            licensor_id,
+            licensee_id,
+            brand_id,
+            contract_number,
+            title,
+            description,
+            contract_type,
+            license_scope,
+            total_value,
+            currency,
+            effective_date,
+            expiration_date,
+            status,
+            approval_status,
+            execution_status,
+            compliance_status,
+            notes,
+            created_by_user_id,
+            updated_by_user_id,
+            created_at,
+            updated_at,
+            deleted_at
+        )
 SELECT 
     c.id, -- Preserve original contract ID
     c.tenant_id,
@@ -216,18 +220,30 @@ SELECT
         CASE WHEN c.contract_tags IS NOT NULL THEN 'Tags: ' || array_to_string(c.contract_tags, ', ') END,
         'Migrated from V2 schema on ' || CURRENT_DATE::text
     ) as notes,
-    c.contract_tags,
     c.created_by_user_id,
     c.updated_by_user_id,
     c.created_at,
     c.updated_at,
     c.deleted_at
-FROM tenant_default.contracts c
-WHERE c.deleted_at IS NULL -- Only migrate active contracts
-ON CONFLICT (id) DO NOTHING; -- Skip if already migrated
+        FROM tenant_default.contracts c
+        WHERE c.deleted_at IS NULL -- Only migrate active contracts
+        ON CONFLICT (id) DO NOTHING; -- Skip if already migrated
+        
+        RAISE NOTICE 'Migrated % V2 contracts to V3 business_contracts', contract_count;
+    ELSE
+        RAISE NOTICE 'No V2 contracts found to migrate';
+    END IF;
+END $$;
 
--- Step 2: Migrate V2 contracts to V3 contract_files  
-INSERT INTO tenant_default.contract_files (
+-- Step 2: Migrate V2 contracts to V3 contract_files (conditional)
+DO $$
+DECLARE
+    contract_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO contract_count FROM tenant_default.contracts WHERE deleted_at IS NULL;
+    
+    IF contract_count > 0 THEN
+        INSERT INTO tenant_default.contract_files (
     id,
     tenant_id,
     business_contract_id,
@@ -292,9 +308,14 @@ SELECT
     c.created_at,
     c.updated_at,
     c.deleted_at
-FROM tenant_default.contracts c
-WHERE c.deleted_at IS NULL -- Only migrate active contracts
-ON CONFLICT (tenant_id, s3_key) DO NOTHING; -- Skip duplicates based on S3 key
+        FROM tenant_default.contracts c
+        WHERE c.deleted_at IS NULL; -- Only migrate active contracts
+        
+        RAISE NOTICE 'Migrated % V2 contracts to V3 contract_files', contract_count;
+    ELSE
+        RAISE NOTICE 'No V2 contracts found to migrate to contract_files';
+    END IF;
+END $$;
 
 -- Step 3: Migrate contract versions
 INSERT INTO tenant_default.contract_versions (

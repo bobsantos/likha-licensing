@@ -145,6 +145,7 @@
                 </configuration>
             </plugin>
 
+
             <!-- Frontend Directory Validation Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -9,8 +9,12 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: (failureCount, error: any) => {
-        if (error?.response?.status === 404) return false
+      retry: (failureCount, error: unknown) => {
+        if (error && typeof error === 'object' && 'response' in error && 
+            typeof (error as { response?: { status?: number } }).response === 'object' &&
+            (error as { response: { status?: number } }).response?.status === 404) {
+          return false
+        }
         return failureCount < 3
       },
     },

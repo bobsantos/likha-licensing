@@ -15,7 +15,7 @@ import java.sql.DatabaseMetaData;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles({ "test", "ci" })
 @DisplayName("Basic Spring Database Connectivity Tests")
 class BasicSpringDatabaseConnectivityTest {
 
@@ -30,8 +30,8 @@ class BasicSpringDatabaseConnectivityTest {
         // Verify database is running and accessible
         try (Connection connection = dataSource.getConnection()) {
             assertThat(connection.isValid(5))
-                .as("Database connection should be valid")
-                .isTrue();
+                    .as("Database connection should be valid")
+                    .isTrue();
         }
     }
 
@@ -41,13 +41,13 @@ class BasicSpringDatabaseConnectivityTest {
         // Test basic database connectivity through Spring Boot
         try (Connection connection = dataSource.getConnection()) {
             assertThat(connection.isValid(5))
-                .as("Database connection should be valid")
-                .isTrue();
+                    .as("Database connection should be valid")
+                    .isTrue();
 
             DatabaseMetaData metaData = connection.getMetaData();
             assertThat(metaData.getDatabaseProductName())
-                .as("Should be connected to PostgreSQL")
-                .isEqualTo("PostgreSQL");
+                    .as("Should be connected to PostgreSQL")
+                    .isEqualTo("PostgreSQL");
         }
     }
 
@@ -56,21 +56,20 @@ class BasicSpringDatabaseConnectivityTest {
     void shouldHaveBasicTables() {
         // Verify that essential tables exist (from earlier migrations)
         String[] basicTables = {
-            "tenants",
-            "business_contracts", 
-            "contract_files"
+                "tenants",
+                "business_contracts",
+                "contract_files"
         };
 
         for (String tableName : basicTables) {
             Integer tableCount = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = ? AND table_schema = 'public'",
-                Integer.class,
-                tableName
-            );
-            
+                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = ? AND table_schema = 'public'",
+                    Integer.class,
+                    tableName);
+
             assertThat(tableCount)
-                .as("Table '%s' should exist in public schema", tableName)
-                .isEqualTo(1);
+                    .as("Table '%s' should exist in public schema", tableName)
+                    .isEqualTo(1);
         }
     }
 
@@ -79,13 +78,12 @@ class BasicSpringDatabaseConnectivityTest {
     void shouldValidateJdbcTemplate() {
         // Test that Spring's JdbcTemplate works correctly
         String result = jdbcTemplate.queryForObject(
-            "SELECT 'Spring JDBC Test Success' as test_result", 
-            String.class
-        );
-        
+                "SELECT 'Spring JDBC Test Success' as test_result",
+                String.class);
+
         assertThat(result)
-            .as("JdbcTemplate should execute queries successfully")
-            .isEqualTo("Spring JDBC Test Success");
+                .as("JdbcTemplate should execute queries successfully")
+                .isEqualTo("Spring JDBC Test Success");
     }
 
     @Test
@@ -93,26 +91,26 @@ class BasicSpringDatabaseConnectivityTest {
     void shouldValidateConnectionPoolConfiguration() throws Exception {
         // Test multiple concurrent connections (basic connection pool validation)
         try (Connection conn1 = dataSource.getConnection();
-             Connection conn2 = dataSource.getConnection();
-             Connection conn3 = dataSource.getConnection()) {
-            
+                Connection conn2 = dataSource.getConnection();
+                Connection conn3 = dataSource.getConnection()) {
+
             assertThat(conn1.isValid(5))
-                .as("First connection should be valid")
-                .isTrue();
-                
+                    .as("First connection should be valid")
+                    .isTrue();
+
             assertThat(conn2.isValid(5))
-                .as("Second connection should be valid")
-                .isTrue();
-                
+                    .as("Second connection should be valid")
+                    .isTrue();
+
             assertThat(conn3.isValid(5))
-                .as("Third connection should be valid")
-                .isTrue();
+                    .as("Third connection should be valid")
+                    .isTrue();
 
             // All connections should be different instances
             assertThat(conn1)
-                .as("Connections should be different instances")
-                .isNotSameAs(conn2)
-                .isNotSameAs(conn3);
+                    .as("Connections should be different instances")
+                    .isNotSameAs(conn2)
+                    .isNotSameAs(conn3);
         }
     }
 
@@ -121,12 +119,11 @@ class BasicSpringDatabaseConnectivityTest {
     void shouldHaveFlywaySchemaHistory() {
         // Even with Flyway disabled in tests, the table should exist from dev setup
         Integer tableCount = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'flyway_schema_history' AND table_schema = 'public'",
-            Integer.class
-        );
-        
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'flyway_schema_history' AND table_schema = 'public'",
+                Integer.class);
+
         assertThat(tableCount)
-            .as("Flyway schema history table should exist")
-            .isEqualTo(1);
+                .as("Flyway schema history table should exist")
+                .isEqualTo(1);
     }
 }

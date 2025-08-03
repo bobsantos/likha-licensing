@@ -203,7 +203,217 @@ CREATE TABLE IF NOT EXISTS brands (
 );
 
 -- ==============================================================================
--- CONTRACTS TABLE (ENHANCED)
+-- CONTRACTS TABLE (ENHANCED) - UPGRADE EXISTING TABLE
+-- ==============================================================================
+-- Check if business_contracts exists with minimal structure and upgrade it
+DO $$
+DECLARE
+    column_count INTEGER;
+BEGIN
+    -- Check if business_contracts table exists and count its columns
+    SELECT COUNT(*) INTO column_count
+    FROM information_schema.columns 
+    WHERE table_name = 'business_contracts' 
+    AND table_schema = 'public';
+    
+    -- If table exists with minimal columns (4 or fewer), it needs to be upgraded
+    IF column_count > 0 AND column_count <= 4 THEN
+        RAISE NOTICE 'Found existing business_contracts table with % columns - upgrading to comprehensive structure', column_count;
+        
+        -- Add all missing columns to existing table
+        -- First, update existing records to have proper values for the 'name' column which will be used as title
+        UPDATE business_contracts SET name = 'Existing Contract - ' || id::text WHERE name IS NULL OR name = '';
+        
+        -- Related Entities (nullable to start)
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'licensor_id' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN licensor_id UUID;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'licensee_id' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN licensee_id UUID;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'brand_id' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN brand_id UUID;
+        END IF;
+        
+        -- Contract Identification
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'contract_number' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN contract_number VARCHAR(100);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'title' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN title VARCHAR(255);
+            -- Use the existing 'name' field as the title for existing records
+            UPDATE business_contracts SET title = name WHERE title IS NULL;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'description' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN description TEXT;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'contract_type' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN contract_type VARCHAR(50) DEFAULT 'NON_EXCLUSIVE';
+            -- Set a default value for existing records
+            UPDATE business_contracts SET contract_type = 'NON_EXCLUSIVE' WHERE contract_type IS NULL;
+        END IF;
+        
+        -- Contract Terms
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'license_scope' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN license_scope TEXT;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'licensed_territories' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN licensed_territories TEXT[];
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'licensed_categories' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN licensed_categories TEXT[];
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'exclusivity_type' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN exclusivity_type VARCHAR(20);
+        END IF;
+        
+        -- Financial Terms
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'total_value' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN total_value DECIMAL(15,2);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'currency' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN currency VARCHAR(3);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'royalty_rate' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN royalty_rate DECIMAL(5,4);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'minimum_guarantee' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN minimum_guarantee DECIMAL(15,2);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'advance_payment' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN advance_payment DECIMAL(15,2);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'payment_schedule' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN payment_schedule VARCHAR(50);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'payment_terms_days' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN payment_terms_days INTEGER DEFAULT 30;
+        END IF;
+        
+        -- Contract Dates
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'execution_date' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN execution_date DATE;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'effective_date' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN effective_date DATE DEFAULT CURRENT_DATE;
+            -- Set default value for existing records
+            UPDATE business_contracts SET effective_date = CURRENT_DATE WHERE effective_date IS NULL;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'expiration_date' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN expiration_date DATE DEFAULT (CURRENT_DATE + INTERVAL '1 year');
+            -- Set default value for existing records  
+            UPDATE business_contracts SET expiration_date = (CURRENT_DATE + INTERVAL '1 year') WHERE expiration_date IS NULL;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'notice_period_days' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN notice_period_days INTEGER;
+        END IF;
+        
+        -- Renewal Information
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'auto_renewal' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN auto_renewal BOOLEAN DEFAULT FALSE;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'renewal_period_months' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN renewal_period_months INTEGER;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'renewal_terms' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN renewal_terms TEXT;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'parent_contract_id' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN parent_contract_id UUID;
+        END IF;
+        
+        -- Status and Lifecycle
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'status' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN status VARCHAR(20) DEFAULT 'DRAFT';
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'approval_status' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN approval_status VARCHAR(20) DEFAULT 'PENDING';
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'execution_status' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN execution_status VARCHAR(20) DEFAULT 'PENDING';
+        END IF;
+        
+        -- Performance Tracking
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'total_royalties_paid' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN total_royalties_paid DECIMAL(15,2) DEFAULT 0;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'last_royalty_payment_date' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN last_royalty_payment_date DATE;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'next_payment_due_date' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN next_payment_due_date DATE;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'compliance_status' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN compliance_status VARCHAR(20) DEFAULT 'COMPLIANT';
+            -- Set default value for existing records
+            UPDATE business_contracts SET compliance_status = 'COMPLIANT' WHERE compliance_status IS NULL;
+        END IF;
+        
+        -- Workflow and Assignment
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'assigned_agent_id' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN assigned_agent_id UUID;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'priority_level' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN priority_level VARCHAR(10) DEFAULT 'MEDIUM';
+        END IF;
+        
+        -- Audit and Tracking
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'notes' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN notes TEXT;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'created_by_user_id' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN created_by_user_id UUID;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'updated_by_user_id' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN updated_by_user_id UUID;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'updated_at' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN updated_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'business_contracts' AND column_name = 'deleted_at' AND table_schema = 'public') THEN
+            ALTER TABLE business_contracts ADD COLUMN deleted_at TIMESTAMP(6);
+        END IF;
+        
+        RAISE NOTICE 'Successfully upgraded existing business_contracts table to comprehensive structure';
+    ELSIF column_count = 0 THEN
+        RAISE NOTICE 'business_contracts table does not exist - will create new comprehensive table';
+    ELSE
+        RAISE NOTICE 'business_contracts table already has comprehensive structure (% columns)', column_count;
+    END IF;
+END $$;
+
+-- ==============================================================================
+-- CONTRACTS TABLE (ENHANCED) - CREATE IF NOT EXISTS
 -- ==============================================================================
 -- Represents the business contract entity (not just files)
 -- Root aggregate in Contract Management bounded context
@@ -306,7 +516,181 @@ CREATE TABLE IF NOT EXISTS business_contracts (
 );
 
 -- ==============================================================================
--- CONTRACT_FILES TABLE (ENHANCED)
+-- CONTRACT_FILES TABLE (ENHANCED) - UPGRADE EXISTING TABLE
+-- ==============================================================================
+-- Check if contract_files exists with minimal structure and upgrade it
+DO $$
+DECLARE
+    column_count INTEGER;
+BEGIN
+    -- Check if contract_files table exists and count its columns
+    SELECT COUNT(*) INTO column_count
+    FROM information_schema.columns 
+    WHERE table_name = 'contract_files' 
+    AND table_schema = 'public';
+    
+    -- If table exists with minimal columns (4 or fewer), it needs to be upgraded
+    IF column_count > 0 AND column_count <= 4 THEN
+        RAISE NOTICE 'Found existing contract_files table with % columns - upgrading to comprehensive structure', column_count;
+        
+        -- Add all missing columns to existing table
+        -- Business Contract Reference (nullable initially since we don't have business contracts yet)
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'business_contract_id' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN business_contract_id UUID;
+        END IF;
+        
+        -- File Identification (filename already exists)
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'original_filename' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN original_filename VARCHAR(255);
+            -- Use existing filename as original_filename for existing records
+            UPDATE contract_files SET original_filename = filename WHERE original_filename IS NULL;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'display_name' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN display_name VARCHAR(255);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'file_type' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN file_type VARCHAR(50) DEFAULT 'OTHER';
+            -- Set default value for existing records
+            UPDATE contract_files SET file_type = 'OTHER' WHERE file_type IS NULL;
+        END IF;
+        
+        -- File Properties
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'file_size' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN file_size BIGINT DEFAULT 0;
+            -- Set default value for existing records
+            UPDATE contract_files SET file_size = 0 WHERE file_size IS NULL;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'mime_type' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN mime_type VARCHAR(100) DEFAULT 'application/octet-stream';
+            -- Set default value for existing records
+            UPDATE contract_files SET mime_type = 'application/octet-stream' WHERE mime_type IS NULL;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'file_extension' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN file_extension VARCHAR(10);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'checksum' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN checksum VARCHAR(64) DEFAULT 'unknown';
+            -- Set default value for existing records
+            UPDATE contract_files SET checksum = 'unknown-' || id::text WHERE checksum IS NULL;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'checksum_algorithm' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN checksum_algorithm VARCHAR(10) DEFAULT 'SHA256';
+        END IF;
+        
+        -- S3/MinIO Integration
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 's3_bucket' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN s3_bucket VARCHAR(100) DEFAULT 'contracts';
+            -- Set default value for existing records
+            UPDATE contract_files SET s3_bucket = 'contracts' WHERE s3_bucket IS NULL;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 's3_key' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN s3_key VARCHAR(500);
+            -- Set default value for existing records based on filename
+            UPDATE contract_files SET s3_key = 'legacy/' || filename WHERE s3_key IS NULL;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 's3_version_id' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN s3_version_id VARCHAR(100);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 's3_etag' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN s3_etag VARCHAR(100);
+        END IF;
+        
+        -- Upload Session Reference
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'upload_session_id' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN upload_session_id UUID;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'upload_order' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN upload_order INTEGER;
+        END IF;
+        
+        -- Status and Processing
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'status' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN status VARCHAR(20) DEFAULT 'UPLOADING';
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'processing_status' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN processing_status VARCHAR(20) DEFAULT 'PENDING';
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'virus_scan_status' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN virus_scan_status VARCHAR(20) DEFAULT 'PENDING';
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'virus_scan_result' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN virus_scan_result TEXT;
+        END IF;
+        
+        -- Business Metadata
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'file_description' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN file_description TEXT;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'file_tags' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN file_tags TEXT[];
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'version_number' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN version_number INTEGER DEFAULT 1;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'is_primary' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN is_primary BOOLEAN DEFAULT FALSE;
+        END IF;
+        
+        -- System Metadata
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'created_by_user_id' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN created_by_user_id UUID;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'updated_by_user_id' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN updated_by_user_id UUID;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'updated_at' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN updated_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'deleted_at' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN deleted_at TIMESTAMP(6);
+        END IF;
+        
+        -- Technical Metadata
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'content_length' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN content_length BIGINT;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'content_encoding' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN content_encoding VARCHAR(50);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'last_accessed_at' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN last_accessed_at TIMESTAMP(6);
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contract_files' AND column_name = 'access_count' AND table_schema = 'public') THEN
+            ALTER TABLE contract_files ADD COLUMN access_count INTEGER DEFAULT 0;
+        END IF;
+        
+        RAISE NOTICE 'Successfully upgraded existing contract_files table to comprehensive structure';
+    ELSIF column_count = 0 THEN
+        RAISE NOTICE 'contract_files table does not exist - will create new comprehensive table';
+    ELSE
+        RAISE NOTICE 'contract_files table already has comprehensive structure (% columns)', column_count;
+    END IF;
+END $$;
+
+-- ==============================================================================
+-- CONTRACT_FILES TABLE (ENHANCED) - CREATE IF NOT EXISTS
 -- ==============================================================================
 -- Links business contracts to their associated files
 -- Replaces the previous "contracts" table which was actually file-focused
@@ -567,77 +951,170 @@ CREATE TABLE IF NOT EXISTS tenant_default.contract_renewal_history (
 );
 
 -- Add foreign key constraints for tenant schema tables
-ALTER TABLE IF EXISTS tenant_default.licensors 
-    ADD CONSTRAINT IF NOT EXISTS fk_licensors_tenant 
-    FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_licensors_tenant' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.licensors 
+            ADD CONSTRAINT fk_licensors_tenant 
+            FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.licensees 
-    ADD CONSTRAINT IF NOT EXISTS fk_licensees_tenant 
-    FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_licensees_tenant' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.licensees 
+            ADD CONSTRAINT fk_licensees_tenant 
+            FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.brands 
-    ADD CONSTRAINT IF NOT EXISTS fk_brands_tenant 
-    FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_brands_tenant' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.brands 
+            ADD CONSTRAINT fk_brands_tenant 
+            FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.brands 
-    ADD CONSTRAINT IF NOT EXISTS fk_brands_licensor 
-    FOREIGN KEY (licensor_id) REFERENCES tenant_default.licensors(id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_brands_licensor' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.brands 
+            ADD CONSTRAINT fk_brands_licensor 
+            FOREIGN KEY (licensor_id) REFERENCES tenant_default.licensors(id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.business_contracts 
-    ADD CONSTRAINT IF NOT EXISTS fk_business_contracts_tenant 
-    FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_business_contracts_tenant' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.business_contracts 
+            ADD CONSTRAINT fk_business_contracts_tenant 
+            FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.business_contracts 
-    ADD CONSTRAINT IF NOT EXISTS fk_business_contracts_licensor 
-    FOREIGN KEY (licensor_id) REFERENCES tenant_default.licensors(id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_business_contracts_licensor' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.business_contracts 
+            ADD CONSTRAINT fk_business_contracts_licensor 
+            FOREIGN KEY (licensor_id) REFERENCES tenant_default.licensors(id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.business_contracts 
-    ADD CONSTRAINT IF NOT EXISTS fk_business_contracts_licensee 
-    FOREIGN KEY (licensee_id) REFERENCES tenant_default.licensees(id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_business_contracts_licensee' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.business_contracts 
+            ADD CONSTRAINT fk_business_contracts_licensee 
+            FOREIGN KEY (licensee_id) REFERENCES tenant_default.licensees(id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.business_contracts 
-    ADD CONSTRAINT IF NOT EXISTS fk_business_contracts_brand 
-    FOREIGN KEY (brand_id) REFERENCES tenant_default.brands(id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_business_contracts_brand' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.business_contracts 
+            ADD CONSTRAINT fk_business_contracts_brand 
+            FOREIGN KEY (brand_id) REFERENCES tenant_default.brands(id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.business_contracts 
-    ADD CONSTRAINT IF NOT EXISTS fk_business_contracts_parent 
-    FOREIGN KEY (parent_contract_id) REFERENCES tenant_default.business_contracts(id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_business_contracts_parent' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.business_contracts 
+            ADD CONSTRAINT fk_business_contracts_parent 
+            FOREIGN KEY (parent_contract_id) REFERENCES tenant_default.business_contracts(id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.contract_files 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_files_tenant 
-    FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_contract_files_tenant' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.contract_files 
+            ADD CONSTRAINT fk_contract_files_tenant 
+            FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.contract_files 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_files_business_contract 
-    FOREIGN KEY (business_contract_id) REFERENCES tenant_default.business_contracts(id) ON DELETE CASCADE;
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_contract_files_business_contract' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.contract_files 
+            ADD CONSTRAINT fk_contract_files_business_contract 
+            FOREIGN KEY (business_contract_id) REFERENCES tenant_default.business_contracts(id) ON DELETE CASCADE;
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.contract_files 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_files_upload_session 
-    FOREIGN KEY (upload_session_id) REFERENCES tenant_default.upload_sessions(id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_contract_files_upload_session' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.contract_files 
+            ADD CONSTRAINT fk_contract_files_upload_session 
+            FOREIGN KEY (upload_session_id) REFERENCES tenant_default.upload_sessions(id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.contract_amendments 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_amendments_tenant 
-    FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_contract_amendments_tenant' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.contract_amendments 
+            ADD CONSTRAINT fk_contract_amendments_tenant 
+            FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.contract_amendments 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_amendments_parent 
-    FOREIGN KEY (parent_contract_id) REFERENCES tenant_default.business_contracts(id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_contract_amendments_parent' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.contract_amendments 
+            ADD CONSTRAINT fk_contract_amendments_parent 
+            FOREIGN KEY (parent_contract_id) REFERENCES tenant_default.business_contracts(id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.contract_amendments 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_amendments_amendment 
-    FOREIGN KEY (amendment_contract_id) REFERENCES tenant_default.business_contracts(id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_contract_amendments_amendment' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.contract_amendments 
+            ADD CONSTRAINT fk_contract_amendments_amendment 
+            FOREIGN KEY (amendment_contract_id) REFERENCES tenant_default.business_contracts(id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.contract_renewal_history 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_renewal_tenant 
-    FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_contract_renewal_tenant' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.contract_renewal_history 
+            ADD CONSTRAINT fk_contract_renewal_tenant 
+            FOREIGN KEY (tenant_id) REFERENCES public.tenants(tenant_id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.contract_renewal_history 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_renewal_original 
-    FOREIGN KEY (original_contract_id) REFERENCES tenant_default.business_contracts(id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_contract_renewal_original' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.contract_renewal_history 
+            ADD CONSTRAINT fk_contract_renewal_original 
+            FOREIGN KEY (original_contract_id) REFERENCES tenant_default.business_contracts(id);
+    END IF;
 
-ALTER TABLE IF EXISTS tenant_default.contract_renewal_history 
-    ADD CONSTRAINT IF NOT EXISTS fk_contract_renewal_renewed 
-    FOREIGN KEY (renewed_contract_id) REFERENCES tenant_default.business_contracts(id);
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_contract_renewal_renewed' AND table_schema = 'tenant_default'
+    ) THEN
+        ALTER TABLE tenant_default.contract_renewal_history 
+            ADD CONSTRAINT fk_contract_renewal_renewed 
+            FOREIGN KEY (renewed_contract_id) REFERENCES tenant_default.business_contracts(id);
+    END IF;
+END $$;
 
 -- ==============================================================================
 -- GRANT PERMISSIONS
@@ -715,38 +1192,65 @@ INSERT INTO tenant_default.brands (
     ARRAY['North America', 'Europe', 'Asia-Pacific']
 ) ON CONFLICT DO NOTHING;
 
--- Insert sample business contract
-INSERT INTO tenant_default.business_contracts (
-    tenant_id,
-    licensor_id,
-    licensee_id,
-    brand_id,
-    title,
-    contract_type,
-    status,
-    effective_date,
-    expiration_date,
-    total_value,
-    currency,
-    royalty_rate,
-    license_scope,
-    licensed_territories
-) VALUES (
-    'default',
-    (SELECT id FROM tenant_default.licensors WHERE name = 'Marvel Entertainment LLC' LIMIT 1),
-    (SELECT id FROM tenant_default.licensees WHERE name = 'Acme Toy Company' LIMIT 1),
-    (SELECT id FROM tenant_default.brands WHERE name = 'Spider-Man' LIMIT 1),
-    'Spider-Man Action Figure License Agreement',
-    'EXCLUSIVE',
-    'ACTIVE',
-    '2025-01-01',
-    '2027-12-31',
-    1000000.00,
-    'USD',
-    0.08,
-    'Action figures, collectibles, and related toy products featuring Spider-Man character',
-    ARRAY['North America']
-) ON CONFLICT DO NOTHING;
+-- Sample business contract insertion temporarily disabled due to constraint conflicts
+-- TODO: Re-enable after tenant schema table constraints are properly aligned
+/*
+-- Insert sample business contract (only if all required entities exist)
+DO $$
+DECLARE
+    licensor_uuid UUID;
+    licensee_uuid UUID;
+    brand_uuid UUID;
+BEGIN
+    -- Get the required entity IDs
+    SELECT id INTO licensor_uuid FROM tenant_default.licensors WHERE name = 'Marvel Entertainment LLC' LIMIT 1;
+    SELECT id INTO licensee_uuid FROM tenant_default.licensees WHERE name = 'Acme Toy Company' LIMIT 1;
+    SELECT id INTO brand_uuid FROM tenant_default.brands WHERE name = 'Spider-Man' LIMIT 1;
+    
+    -- Only insert if all required entities exist
+    IF licensor_uuid IS NOT NULL AND licensee_uuid IS NOT NULL AND brand_uuid IS NOT NULL THEN
+        INSERT INTO tenant_default.business_contracts (
+            tenant_id,
+            licensor_id,
+            licensee_id,
+            brand_id,
+            title,
+            contract_type,
+            status,
+            effective_date,
+            expiration_date,
+            total_value,
+            currency,
+            royalty_rate,
+            license_scope,
+            licensed_territories
+        ) VALUES (
+            'default',
+            licensor_uuid,
+            licensee_uuid,
+            brand_uuid,
+            'Spider-Man Action Figure License Agreement',
+            'EXCLUSIVE',
+            'ACTIVE',
+            '2025-01-01',
+            '2027-12-31',
+            1000000.00,
+            'USD',
+            0.08,
+            'Action figures, collectibles, and related toy products featuring Spider-Man character',
+            ARRAY['North America']
+        ) ON CONFLICT DO NOTHING;
+        
+        RAISE NOTICE 'Sample business contract inserted successfully';
+    ELSE
+        RAISE WARNING 'Could not insert sample business contract - required entities not found (licensor: %, licensee: %, brand: %)', 
+                     licensor_uuid, licensee_uuid, brand_uuid;
+    END IF;
+END $$;
+*/
+
+-- Sample business contract insertion skipped - will be handled in V4 migration
+DO $$ BEGIN RAISE NOTICE 'Sample business contract insertion skipped - will be handled in V4 migration'; END $$;
 
 -- ==============================================================================
 -- SCHEMA VALIDATION
