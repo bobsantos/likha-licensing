@@ -71,15 +71,15 @@ jobs:
       - name: Initialize test database with Flyway migrations
         run: |
           echo "Initializing test database with schema and data..."
-          mvn flyway:migrate -Pci -Dfrontend.skip=true
+          mvn flyway:migrate -Pci -Dfrontend.skip=true \
+            -Dpostgres.host=localhost \
+            -Dpostgres.port=5432 \
+            -Dpostgres.db=likha_licensing \
+            -Dpostgres.user=postgres \
+            -Dpostgres.password=postgres
         working-directory: .
         env:
           SPRING_PROFILES_ACTIVE: ci
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: likha_licensing
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
 
       - name: Run backend tests
         run: |
@@ -291,28 +291,28 @@ jobs:
       - name: Initialize test database with Flyway migrations
         run: |
           echo "Initializing test database with schema and data..."
-          mvn flyway:migrate -Pci -Dfrontend.skip=true
+          mvn flyway:migrate -Pci -Dfrontend.skip=true \
+            -Dpostgres.host=localhost \
+            -Dpostgres.port=5432 \
+            -Dpostgres.db=likha_licensing \
+            -Dpostgres.user=postgres \
+            -Dpostgres.password=postgres
         working-directory: .
         env:
           SPRING_PROFILES_ACTIVE: ci
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: likha_licensing
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
 
       - name: Build complete application (backend + frontend)
         run: |
           echo "Building complete application with frontend..."
-          mvn clean package -Pci
+          mvn clean package -Pci \
+            -Dpostgres.host=localhost \
+            -Dpostgres.port=5432 \
+            -Dpostgres.db=likha_licensing \
+            -Dpostgres.user=postgres \
+            -Dpostgres.password=postgres
         working-directory: .
         env:
           SPRING_PROFILES_ACTIVE: test
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: likha_licensing
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
 
       - name: Upload final build artifact
         uses: actions/upload-artifact@v4

@@ -310,9 +310,9 @@ To initialize frontend, run from project root:
                         <groupId>org.flywaydb</groupId>
                         <artifactId>flyway-maven-plugin</artifactId>
                         <configuration>
-                            <url>jdbc:postgresql://${env.POSTGRES_HOST}:${env.POSTGRES_PORT}/${env.POSTGRES_DB}</url>
-                            <user>${env.POSTGRES_USER}</user>
-                            <password>${env.POSTGRES_PASSWORD}</password>
+                            <url>jdbc:postgresql://${postgres.host}:${postgres.port}/${postgres.db}</url>
+                            <user>${postgres.user}</user>
+                            <password>${postgres.password}</password>
                             <locations>
                                 <location>classpath:db/migration</location>
                             </locations>
