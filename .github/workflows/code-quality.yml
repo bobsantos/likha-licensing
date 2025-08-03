@@ -96,48 +96,114 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
+      # Check for documentation-only changes to skip OWASP scan
+      - name: Check for documentation-only changes
+        id: check_docs_only
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          # Get changed files in this PR
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }})
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Check if only documentation files changed
+          if echo "$CHANGED_FILES" | grep -qvE '\.(md|txt|rst|adoc)$|^docs/|^README|^LICENSE|^\.github/.*\.md$'; then
+            echo "Non-documentation files changed - OWASP scan needed"
+            echo "docs_only=false" >> $GITHUB_OUTPUT
+          else
+            echo "Only documentation files changed - skipping OWASP scan"
+            echo "docs_only=true" >> $GITHUB_OUTPUT
+          fi
+
       # Optimized OWASP NVD Data Caching Strategy
       - name: Cache OWASP NVD Database
-        if: ${{ github.event.inputs.skip_owasp != 'true' }}
+        id: cache_nvd
+        if: ${{ github.event.inputs.skip_owasp != 'true' && (github.event_name != 'pull_request' || steps.check_docs_only.outputs.docs_only != 'true') }}
         uses: actions/cache@v4
         with:
           path: |
             ~/.m2/repository/org/owasp/dependency-check-data
             backend/target/dependency-check-data
-          key: ${{ github.event.inputs.force_full_scan == 'true' && format('{0}-owasp-nvd-force-{1}', runner.os, github.run_number) || format('{0}-owasp-nvd-{1}-{2}', runner.os, hashFiles('backend/pom.xml'), github.run_number) }}
+            ~/.cache/dependency-check
+            /tmp/dependency-check
+          key: ${{ github.event.inputs.force_full_scan == 'true' && format('{0}-owasp-nvd-force-{1}', runner.os, github.run_id) || format('{0}-owasp-nvd-{1}-{2}', runner.os, hashFiles('**/pom.xml'), startsWith(github.ref, 'refs/heads/') && github.ref_name || github.event.pull_request.base.ref) }}
           restore-keys: |
-            ${{ runner.os }}-owasp-nvd-${{ hashFiles('backend/pom.xml') }}-
+            ${{ runner.os }}-owasp-nvd-${{ hashFiles('**/pom.xml') }}-
             ${{ runner.os }}-owasp-nvd-
 
       # Performance monitoring start
       - name: Record OWASP scan start time
-        if: ${{ github.event.inputs.skip_owasp != 'true' }}
+        if: ${{ github.event.inputs.skip_owasp != 'true' && (github.event_name != 'pull_request' || steps.check_docs_only.outputs.docs_only != 'true') }}
         run: |
           echo "OWASP_START_TIME=$(date +%s)" >> $GITHUB_ENV
           echo "Starting OWASP dependency check at $(date)"
+          
+          # Log cache status
+          if [ "${{ steps.cache_nvd.outputs.cache-hit }}" == "true" ]; then
+            echo "✅ NVD cache hit - scan should be faster"
+            echo "CACHE_STATUS=hit" >> $GITHUB_ENV
+          else
+            echo "❌ NVD cache miss - full database download required"
+            echo "CACHE_STATUS=miss" >> $GITHUB_ENV
+          fi
 
       - name: Run OWASP Dependency Check (Backend) - Attempt 1
-        if: ${{ github.event.inputs.skip_owasp != 'true' }}
+        if: ${{ github.event.inputs.skip_owasp != 'true' && (github.event_name != 'pull_request' || steps.check_docs_only.outputs.docs_only != 'true') }}
         id: owasp_attempt_1
         run: |
           echo "Running consolidated OWASP dependency vulnerability scan (Attempt 1)..."
           echo "Using enhanced timeout and retry settings to handle NVD API issues"
-          mvn dependency-check:check -Dfrontend.skip=true -DnvdApiKey="$NVD_API_KEY" -DnvdApiDelay=16000 -DnvdValidForHours=24 -DnvdMaxRetryCount=5
+          echo "Cache status: $CACHE_STATUS"
+          
+          # Enhanced configuration for better performance
+          mvn dependency-check:check \
+            -Dfrontend.skip=true \
+            -DnvdApiKey="$NVD_API_KEY" \
+            -DnvdApiDelay=12000 \
+            -DnvdValidForHours=48 \
+            -DnvdMaxRetryCount=3 \
+            -DconnectionTimeout=120000 \
+            -DreadTimeout=60000 \
+            -DthreadCount=2
         continue-on-error: true
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
       - name: Run OWASP Dependency Check (Backend) - Fallback without API Key
-        if: ${{ github.event.inputs.skip_owasp != 'true' && steps.owasp_attempt_1.outcome == 'failure' }}
+        if: ${{ github.event.inputs.skip_owasp != 'true' && (github.event_name != 'pull_request' || steps.check_docs_only.outputs.docs_only != 'true') && steps.owasp_attempt_1.outcome == 'failure' }}
         id: owasp_fallback
         run: |
           echo "OWASP scan with API key failed. Attempting fallback scan without API key..."
           echo "Note: This will use local NVD database and may be slower but more reliable"
-          mvn dependency-check:check -Dfrontend.skip=true -DnvdApiDelay=20000 -DnvdValidForHours=24
+          
+          # Fallback with optimized settings
+          mvn dependency-check:check \
+            -Dfrontend.skip=true \
+            -DnvdApiDelay=15000 \
+            -DnvdValidForHours=48 \
+            -DconnectionTimeout=180000 \
+            -DreadTimeout=90000 \
+            -DthreadCount=1
         continue-on-error: true
 
+      # Skip message when documentation-only changes
+      - name: Create OWASP documentation skip report
+        if: ${{ github.event.inputs.skip_owasp != 'true' && github.event_name == 'pull_request' && steps.check_docs_only.outputs.docs_only == 'true' }}
+        run: |
+          cat > owasp-performance.md << EOF
+          ## OWASP Performance Metrics
+          
+          - **Status**: SKIPPED (Documentation-only changes detected)
+          - **Changed Files**: Documentation files only
+          - **Timestamp**: $(date)
+          - **Runner**: ${{ runner.os }}
+          - **Workflow Trigger**: ${{ github.event_name }}
+          - **Performance Impact**: Saved ~2-10 minutes by skipping scan
+          EOF
+          echo "OWASP_STATUS=skipped_docs_only" >> $GITHUB_ENV
+
       - name: Check OWASP Results and Generate Summary
-        if: ${{ github.event.inputs.skip_owasp != 'true' }}
+        if: ${{ github.event.inputs.skip_owasp != 'true' && (github.event_name != 'pull_request' || steps.check_docs_only.outputs.docs_only != 'true') }}
         run: |
           if [ "${{ steps.owasp_attempt_1.outcome }}" == "success" ]; then
             echo "✅ OWASP scan completed successfully with API key"
@@ -152,30 +218,52 @@ jobs:
 
       # Performance monitoring end
       - name: Calculate OWASP scan duration
-        if: ${{ always() && github.event.inputs.skip_owasp != 'true' }}
+        if: ${{ always() && github.event.inputs.skip_owasp != 'true' && (github.event_name != 'pull_request' || steps.check_docs_only.outputs.docs_only != 'true') }}
         run: |
           END_TIME=$(date +%s)
           DURATION=$((END_TIME - OWASP_START_TIME))
           echo "OWASP scan completed in ${DURATION} seconds"
           echo "OWASP_DURATION=${DURATION}" >> $GITHUB_ENV
           
+          # Determine performance category
+          if [ $DURATION -le 120 ]; then
+            PERFORMANCE_CATEGORY="🚀 Excellent (≤2 min)"
+          elif [ $DURATION -le 300 ]; then
+            PERFORMANCE_CATEGORY="✅ Good (2-5 min)"
+          elif [ $DURATION -le 600 ]; then
+            PERFORMANCE_CATEGORY="⚠️ Acceptable (5-10 min)"
+          else
+            PERFORMANCE_CATEGORY="❌ Slow (>10 min)"
+          fi
+          
           # Create performance report
           cat > owasp-performance.md << EOF
           ## OWASP Performance Metrics
           
-          - **Scan Duration**: ${DURATION} seconds
+          - **Scan Duration**: ${DURATION} seconds ($(($DURATION / 60))min $(($DURATION % 60))s)
+          - **Performance**: ${PERFORMANCE_CATEGORY}
           - **Scan Status**: ${OWASP_STATUS:-unknown}
-          - **Cache Status**: $([ -d ~/.m2/repository/org/owasp/dependency-check-data ] && echo "Cache Hit" || echo "Cache Miss")
+          - **Cache Status**: ${CACHE_STATUS:-unknown}
+          - **NVD Database**: $([ -d ~/.m2/repository/org/owasp/dependency-check-data ] && echo "Cached" || echo "Downloaded")
           - **Timestamp**: $(date)
           - **Runner**: ${{ runner.os }}
           - **Force Full Scan**: ${{ github.event.inputs.force_full_scan == 'true' && 'Yes' || 'No' }}
           - **Workflow Trigger**: ${{ github.event_name }}
           - **NVD API Key Used**: $([ -n "${{ secrets.NVD_API_KEY }}" ] && echo "Yes" || echo "No")
           
+          ### Performance Optimizations Applied
+          - Enhanced NVD database caching with multiple cache paths
+          - Optimized connection timeouts and retry settings
+          - Smart cache key strategy based on pom.xml changes
+          - Documentation-only change detection
+          - Reduced API delay from 16s to 12s with API key
+          
           ### Troubleshooting Notes
           - If API method failed: NVD service may be experiencing issues
           - Fallback method uses local database and longer delays
           - Check GitHub Secrets for valid NVD_API_KEY if API method fails consistently
+          - Cache miss significantly increases scan time (5-10 minutes)
+          - Documentation-only PRs automatically skip OWASP scan
           EOF
 
       # Skip message when OWASP is disabled

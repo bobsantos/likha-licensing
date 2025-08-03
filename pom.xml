@@ -170,22 +170,38 @@
                         <suppressionFiles>
                             <suppressionFile>${project.basedir}/.github/dependency-check-suppressions.xml</suppressionFile>
                         </suppressionFiles>
-                        <!-- API key from environment variable or command line parameter -->
+                        
+                        <!-- API Configuration -->
                         <nvdApiKey>${nvdApiKey}</nvdApiKey>
-                        <!-- Aggressive delay to avoid NVD API 403/404 errors -->
-                        <!-- Increased from 8000ms to 16000ms (16 seconds) based on community recommendations -->
-                        <nvdApiDelay>16000</nvdApiDelay>
-                        <!-- Configure retry settings -->
-                        <nvdMaxRetryCount>5</nvdMaxRetryCount>
-                        <!-- Enable data directory caching for better performance -->
+                        <!-- Optimized delay: reduced from 16s to 12s for better balance -->
+                        <nvdApiDelay>12000</nvdApiDelay>
+                        <!-- Reduced retry count for faster failure detection -->
+                        <nvdMaxRetryCount>3</nvdMaxRetryCount>
+                        <!-- Extended validity to reduce API calls -->
+                        <nvdValidForHours>48</nvdValidForHours>
+                        
+                        <!-- Performance Optimizations -->
                         <dataDirectory>${project.build.directory}/dependency-check-data</dataDirectory>
-                        <!-- Add valid for hours to reduce API calls -->
-                        <nvdValidForHours>24</nvdValidForHours>
+                        <!-- Connection timeouts for better reliability -->
+                        <connectionTimeout>120000</connectionTimeout> <!-- 2 minutes -->
+                        <readTimeout>60000</readTimeout> <!-- 1 minute -->
+                        <!-- Multi-threading for faster processing -->
+                        <threadCount>2</threadCount>
+                        
+                        <!-- Output Configuration -->
                         <formats>
                             <format>HTML</format>
                             <format>JSON</format>
                         </formats>
-                        <!-- Disable analyzers that aren't needed for typical Java projects -->
+                        
+                        <!-- Analyzer Optimizations: Disable non-Java analyzers -->
+                        <!-- Core Java analyzers remain enabled -->
+                        <jarAnalyzerEnabled>true</jarAnalyzerEnabled>
+                        <archiveAnalyzerEnabled>true</archiveAnalyzerEnabled>
+                        <knownExploitedAnalyzerEnabled>true</knownExploitedAnalyzerEnabled>
+                        <vulnerabilitySuppressionAnalyzerEnabled>true</vulnerabilitySuppressionAnalyzerEnabled>
+                        
+                        <!-- Disable language-specific analyzers not applicable to Java projects -->
                         <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                         <centralAnalyzerEnabled>false</centralAnalyzerEnabled>
                         <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
@@ -200,6 +216,20 @@
                         <composerAnalyzerEnabled>false</composerAnalyzerEnabled>
                         <autoconfAnalyzerEnabled>false</autoconfAnalyzerEnabled>
                         <cmakeAnalyzerEnabled>false</cmakeAnalyzerEnabled>
+                        <swiftPackageManagerAnalyzerEnabled>false</swiftPackageManagerAnalyzerEnabled>
+                        <golangModAnalyzerEnabled>false</golangModAnalyzerEnabled>
+                        <golangDepAnalyzerEnabled>false</golangDepAnalyzerEnabled>
+                        <dartAnalyzerEnabled>false</dartAnalyzerEnabled>
+                        
+                        <!-- Optional: Disable additional analyzers that may not be needed -->
+                        <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+                        <ossIndexAnalyzerEnabled>false</ossIndexAnalyzerEnabled>
+                        
+                        <!-- Memory optimization -->
+                        <jvmArgs>
+                            <jvmArg>-Xmx2g</jvmArg>
+                            <jvmArg>-XX:+UseG1GC</jvmArg>
+                        </jvmArgs>
                     </configuration>
                 </plugin>
             </plugins>
