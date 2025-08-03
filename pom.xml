@@ -164,7 +164,7 @@
                 <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <version>9.0.9</version>
+                    <version>12.1.0</version>
                     <configuration>
                         <failBuildOnCVSS>7</failBuildOnCVSS>
                         <suppressionFiles>
@@ -172,13 +172,15 @@
                         </suppressionFiles>
                         <!-- API key from environment variable or command line parameter -->
                         <nvdApiKey>${nvdApiKey}</nvdApiKey>
-                        <!-- Increase delay to avoid rate limiting (default: 2000ms with API key) -->
-                        <!-- Using 8000ms (8 seconds) to avoid 403 rate limiting errors -->
-                        <nvdApiDelay>8000</nvdApiDelay>
+                        <!-- Aggressive delay to avoid NVD API 403/404 errors -->
+                        <!-- Increased from 8000ms to 16000ms (16 seconds) based on community recommendations -->
+                        <nvdApiDelay>16000</nvdApiDelay>
                         <!-- Configure retry settings -->
-                        <nvdMaxRetryCount>3</nvdMaxRetryCount>
+                        <nvdMaxRetryCount>5</nvdMaxRetryCount>
                         <!-- Enable data directory caching for better performance -->
                         <dataDirectory>${project.build.directory}/dependency-check-data</dataDirectory>
+                        <!-- Add valid for hours to reduce API calls -->
+                        <nvdValidForHours>24</nvdValidForHours>
                         <formats>
                             <format>HTML</format>
                             <format>JSON</format>

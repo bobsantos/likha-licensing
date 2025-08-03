@@ -116,14 +116,39 @@ jobs:
           echo "OWASP_START_TIME=$(date +%s)" >> $GITHUB_ENV
           echo "Starting OWASP dependency check at $(date)"
 
-      - name: Run OWASP Dependency Check (Backend)
+      - name: Run OWASP Dependency Check (Backend) - Attempt 1
         if: ${{ github.event.inputs.skip_owasp != 'true' }}
+        id: owasp_attempt_1
         run: |
-          echo "Running consolidated OWASP dependency vulnerability scan..."
-          mvn dependency-check:check -Dfrontend.skip=true -DnvdApiKey="$NVD_API_KEY" -DnvdApiDelay=8000 -DnvdValidForHours=24
+          echo "Running consolidated OWASP dependency vulnerability scan (Attempt 1)..."
+          echo "Using enhanced timeout and retry settings to handle NVD API issues"
+          mvn dependency-check:check -Dfrontend.skip=true -DnvdApiKey="$NVD_API_KEY" -DnvdApiDelay=16000 -DnvdValidForHours=24 -DnvdMaxRetryCount=5
         continue-on-error: true
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+
+      - name: Run OWASP Dependency Check (Backend) - Fallback without API Key
+        if: ${{ github.event.inputs.skip_owasp != 'true' && steps.owasp_attempt_1.outcome == 'failure' }}
+        id: owasp_fallback
+        run: |
+          echo "OWASP scan with API key failed. Attempting fallback scan without API key..."
+          echo "Note: This will use local NVD database and may be slower but more reliable"
+          mvn dependency-check:check -Dfrontend.skip=true -DnvdApiDelay=20000 -DnvdValidForHours=24
+        continue-on-error: true
+
+      - name: Check OWASP Results and Generate Summary
+        if: ${{ github.event.inputs.skip_owasp != 'true' }}
+        run: |
+          if [ "${{ steps.owasp_attempt_1.outcome }}" == "success" ]; then
+            echo "✅ OWASP scan completed successfully with API key"
+            echo "OWASP_STATUS=success_with_api" >> $GITHUB_ENV
+          elif [ "${{ steps.owasp_fallback.outcome }}" == "success" ]; then
+            echo "⚠️  OWASP scan completed using fallback method (without API key)"
+            echo "OWASP_STATUS=success_fallback" >> $GITHUB_ENV
+          else
+            echo "❌ OWASP scan failed with both API key and fallback methods"
+            echo "OWASP_STATUS=failed" >> $GITHUB_ENV
+          fi
 
       # Performance monitoring end
       - name: Calculate OWASP scan duration
@@ -139,11 +164,18 @@ jobs:
           ## OWASP Performance Metrics
           
           - **Scan Duration**: ${DURATION} seconds
+          - **Scan Status**: ${OWASP_STATUS:-unknown}
           - **Cache Status**: $([ -d ~/.m2/repository/org/owasp/dependency-check-data ] && echo "Cache Hit" || echo "Cache Miss")
           - **Timestamp**: $(date)
           - **Runner**: ${{ runner.os }}
           - **Force Full Scan**: ${{ github.event.inputs.force_full_scan == 'true' && 'Yes' || 'No' }}
           - **Workflow Trigger**: ${{ github.event_name }}
+          - **NVD API Key Used**: $([ -n "${{ secrets.NVD_API_KEY }}" ] && echo "Yes" || echo "No")
+          
+          ### Troubleshooting Notes
+          - If API method failed: NVD service may be experiencing issues
+          - Fallback method uses local database and longer delays
+          - Check GitHub Secrets for valid NVD_API_KEY if API method fails consistently
           EOF
 
       # Skip message when OWASP is disabled
