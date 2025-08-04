@@ -1,7 +1,7 @@
 services:
   # PostgreSQL Database - Schema-per-tenant multi-tenancy
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: likha-postgres
     environment:
       POSTGRES_DB: likha_licensing
