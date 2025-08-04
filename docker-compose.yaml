@@ -1,7 +1,7 @@
 services:
   # PostgreSQL Database - Schema-per-tenant multi-tenancy
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: likha-postgres
     environment:
       POSTGRES_DB: likha_licensing
@@ -11,7 +11,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/init:/docker-entrypoint-initdb.d
     networks:
       - likha-network
     healthcheck:
