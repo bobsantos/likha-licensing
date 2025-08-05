@@ -52,11 +52,13 @@
   - Test schema accessibility across different tenant contexts
   - Validate connection pooling with contract management operations
 
-- [ ] **todo-5:** [HIGH] Implement health check extensions for contract management schema
-  - **🤝 Requires @agent-backend support** for Spring Boot actuator integration
-  - Add contract table health checks to Spring Boot actuator
-  - Verify schema existence and accessibility
-  - Include in existing /actuator/health endpoint validation
+- [x] **todo-5:** [HIGH] **✅ COMPLETED** Implement health check extensions for contract management schema
+  - **✅ RESOLVED:** ContractManagementHealthIndicator implemented with comprehensive schema validation
+  - **✅ ADDED:** Spring Boot actuator integration for contract table health checks
+  - **✅ ADDED:** Schema existence and accessibility verification with detailed reporting
+  - **✅ ADDED:** Row Level Security (RLS) and tenant isolation validation
+  - **✅ ADDED:** Performance monitoring with execution timing
+  - **✅ ADDED:** Comprehensive unit and integration tests following TDD approach
 
 - [ ] **todo-6:** [HIGH] Verify database accessibility from backend service with contract operations
   - **🤝 Requires @agent-backend support** for Spring JDBC testing
