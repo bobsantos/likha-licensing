@@ -1,4 +1,4 @@
-package app.likha.infrastructure.health;
+package app.likha.contracts.internal.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,18 +14,18 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@DisplayName("Contract Management Health Indicator Tests")
-class ContractManagementHealthIndicatorTest {
+@DisplayName("Contract Management Health Service Tests")
+class ContractManagementHealthServiceTest {
 
     @Mock
     private JdbcTemplate jdbcTemplate;
 
-    private ContractManagementHealthIndicator healthIndicator;
+    private ContractManagementHealthService healthService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        healthIndicator = new ContractManagementHealthIndicator(jdbcTemplate);
+        healthService = new ContractManagementHealthService(jdbcTemplate);
     }
 
     @Test
@@ -46,7 +46,7 @@ class ContractManagementHealthIndicatorTest {
             .thenReturn("invalid_tenant");
 
         // When
-        Health health = healthIndicator.health();
+        Health health = healthService.health();
 
         // Then
         assertThat(health.getStatus())
@@ -73,7 +73,7 @@ class ContractManagementHealthIndicatorTest {
             .thenReturn(0); // Tables don't exist
 
         // When
-        Health health = healthIndicator.health();
+        Health health = healthService.health();
 
         // Then
         assertThat(health.getStatus())
@@ -97,7 +97,7 @@ class ContractManagementHealthIndicatorTest {
             .thenThrow(new DataAccessException("Connection failed") {});
 
         // When
-        Health health = healthIndicator.health();
+        Health health = healthService.health();
 
         // Then
         assertThat(health.getStatus())
@@ -133,7 +133,7 @@ class ContractManagementHealthIndicatorTest {
             .thenReturn("invalid_tenant");
 
         // When
-        Health health = healthIndicator.health();
+        Health health = healthService.health();
 
         // Then - verify specific tables are being checked
         String[] expectedTables = {
@@ -173,7 +173,7 @@ class ContractManagementHealthIndicatorTest {
             .thenReturn("invalid_tenant");
 
         // When
-        Health health = healthIndicator.health();
+        Health health = healthService.health();
 
         // Then
         assertThat(health.getStatus())
@@ -204,7 +204,7 @@ class ContractManagementHealthIndicatorTest {
             .thenReturn("invalid_tenant");
 
         // When
-        Health health = healthIndicator.health();
+        Health health = healthService.health();
 
         // Then
         assertThat(health.getStatus())
@@ -229,7 +229,7 @@ class ContractManagementHealthIndicatorTest {
             .thenReturn(false); // RLS not enabled
 
         // When
-        Health health = healthIndicator.health();
+        Health health = healthService.health();
 
         // Then
         assertThat(health.getStatus())
@@ -257,7 +257,7 @@ class ContractManagementHealthIndicatorTest {
             .thenReturn("invalid_tenant");
 
         // When
-        Health health = healthIndicator.health();
+        Health health = healthService.health();
 
         // Then
         assertThat(health.getDetails())

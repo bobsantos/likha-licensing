@@ -1,25 +1,28 @@
-package app.likha.infrastructure.health;
+package app.likha.contracts.internal.service;
 
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.dao.DataAccessException;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Health indicator for Contract Management schema and infrastructure.
+ * Internal service for Contract Management health validation.
  * 
  * Validates that all required contract management tables exist and are accessible,
  * including proper multi-tenant configuration with Row Level Security.
  * 
- * This health check ensures the contract management bounded context is ready
+ * This service ensures the contract management bounded context is ready
  * for operation and all database infrastructure is properly configured.
+ * 
+ * Following Spring Modulith principles, this service is internal to the contracts module
+ * and should only be accessed through the public API (controller layer).
  */
-@Component
-public class ContractManagementHealthIndicator implements HealthIndicator {
+@Service
+public class ContractManagementHealthService implements HealthIndicator {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -37,7 +40,7 @@ public class ContractManagementHealthIndicator implements HealthIndicator {
         "upload_sessions", "security_audit_log"
     };
 
-    public ContractManagementHealthIndicator(JdbcTemplate jdbcTemplate) {
+    public ContractManagementHealthService(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
