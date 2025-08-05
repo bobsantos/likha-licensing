@@ -1,4 +1,4 @@
-package app.likha.contracts.internal.service;
+package app.likha.files.internal.service;
 
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
@@ -10,33 +10,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Internal service for Contract Management health validation.
+ * Internal service for File Storage health validation.
  * 
- * Validates that all required contract management tables exist and are accessible,
+ * Validates that all required file storage tables exist and are accessible,
  * including proper multi-tenant configuration with Row Level Security.
  * 
- * This service ensures the contract management bounded context is ready
+ * This service ensures the file storage bounded context is ready
  * for operation and all database infrastructure is properly configured.
  * 
- * Following Spring Modulith principles, this service is internal to the contracts module
+ * Following Spring Modulith principles, this service is internal to the files module
  * and should only be accessed through the public API (controller layer).
  */
 @Service
-public class ContractManagementHealthService implements HealthIndicator {
+public class FileStorageHealthService implements HealthIndicator {
 
     private final JdbcTemplate jdbcTemplate;
 
-    // Required contract management tables that must exist and be accessible
+    // Required file storage tables that must exist and be accessible
     private static final String[] REQUIRED_TABLES = {
-        "licensors", "licensees", "brands", "business_contracts", "contract_versions", "contract_access_log"
+        "upload_sessions", "contract_files"
     };
 
     // Tables that must have Row Level Security enabled
     private static final String[] RLS_REQUIRED_TABLES = {
-        "licensors", "licensees", "brands", "business_contracts", "contract_versions", "contract_access_log"
+        "upload_sessions", "contract_files"
     };
 
-    public ContractManagementHealthService(JdbcTemplate jdbcTemplate) {
+    public FileStorageHealthService(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -49,7 +49,7 @@ public class ContractManagementHealthService implements HealthIndicator {
             List<String> missingTables = validateTableExistence();
             if (!missingTables.isEmpty()) {
                 return Health.down()
-                    .withDetail("error", "Contract management schema validation failed")
+                    .withDetail("error", "File storage schema validation failed")
                     .withDetail("missing_tables", missingTables)
                     .withDetail("validation_time", System.currentTimeMillis() - startTime)
                     .build();
@@ -85,13 +85,13 @@ public class ContractManagementHealthService implements HealthIndicator {
 
         } catch (DataAccessException e) {
             return Health.down()
-                .withDetail("error", "Database access failed during contract schema validation")
+                .withDetail("error", "Database access failed during file storage schema validation")
                 .withDetail("exception", e.getMessage())
                 .withDetail("validation_time", System.currentTimeMillis() - startTime)
                 .build();
         } catch (Exception e) {
             return Health.down()
-                .withDetail("error", "Unexpected error during contract schema validation")
+                .withDetail("error", "Unexpected error during file storage schema validation")
                 .withDetail("exception", e.getMessage())
                 .withDetail("validation_time", System.currentTimeMillis() - startTime)
                 .build();
@@ -99,7 +99,7 @@ public class ContractManagementHealthService implements HealthIndicator {
     }
 
     /**
-     * Validates that all required contract management tables exist.
+     * Validates that all required file storage tables exist.
      * 
      * @return List of missing table names, empty if all tables exist
      */

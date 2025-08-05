@@ -1,4 +1,4 @@
-package app.likha.contracts.internal.service;
+package app.likha.files.internal.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,22 +14,22 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@DisplayName("Contract Management Health Service Tests")
-class ContractManagementHealthServiceTest {
+@DisplayName("File Storage Health Service Tests")
+class FileStorageHealthServiceTest {
 
     @Mock
     private JdbcTemplate jdbcTemplate;
 
-    private ContractManagementHealthService healthService;
+    private FileStorageHealthService healthService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        healthService = new ContractManagementHealthService(jdbcTemplate);
+        healthService = new FileStorageHealthService(jdbcTemplate);
     }
 
     @Test
-    @DisplayName("Should return UP status when all contract tables are accessible")
+    @DisplayName("Should return UP status when all file storage tables are accessible")
     void shouldReturnUpWhenAllTablesAccessible() {
         // Given - all table existence queries return successfully
         when(jdbcTemplate.queryForObject(contains("information_schema.tables"), eq(Integer.class), anyString()))
@@ -58,15 +58,15 @@ class ContractManagementHealthServiceTest {
             .containsKeys("tables_validated", "rls_validated", "tenant_function_validated", "validation_time");
 
         assertThat(health.getDetails().get("tables_validated"))
-            .as("Should validate expected number of tables")
-            .isEqualTo(6); // Expected contract management tables
+            .as("Should validate expected number of file storage tables")
+            .isEqualTo(2); // upload_sessions, contract_files
 
         // Verify all expected tables were checked
-        verify(jdbcTemplate, times(6)).queryForObject(contains("information_schema.tables"), eq(Integer.class), anyString());
+        verify(jdbcTemplate, times(2)).queryForObject(contains("information_schema.tables"), eq(Integer.class), anyString());
     }
 
     @Test
-    @DisplayName("Should return DOWN status when contract tables are missing")
+    @DisplayName("Should return DOWN status when file storage tables are missing")
     void shouldReturnDownWhenTablesMissing() {
         // Given - some tables don't exist
         when(jdbcTemplate.queryForObject(contains("information_schema.tables"), eq(Integer.class), anyString()))
@@ -86,7 +86,7 @@ class ContractManagementHealthServiceTest {
 
         assertThat(health.getDetails().get("error"))
             .as("Should indicate missing tables")
-            .isEqualTo("Contract management schema validation failed");
+            .isEqualTo("File storage schema validation failed");
     }
 
     @Test
@@ -110,7 +110,7 @@ class ContractManagementHealthServiceTest {
 
         assertThat(health.getDetails().get("error"))
             .as("Should indicate database access failure")
-            .isEqualTo("Database access failed during contract schema validation");
+            .isEqualTo("Database access failed during file storage schema validation");
 
         assertThat(health.getDetails().get("exception"))
             .as("Should contain exception message")
@@ -118,7 +118,7 @@ class ContractManagementHealthServiceTest {
     }
 
     @Test
-    @DisplayName("Should validate all required contract management tables")
+    @DisplayName("Should validate all required file storage tables")
     void shouldValidateAllRequiredTables() {
         // Given - table existence queries succeed
         when(jdbcTemplate.queryForObject(contains("information_schema.tables"), eq(Integer.class), anyString()))
@@ -137,7 +137,7 @@ class ContractManagementHealthServiceTest {
 
         // Then - verify specific tables are being checked
         String[] expectedTables = {
-            "licensors", "licensees", "brands", "business_contracts", "contract_versions", "contract_access_log"
+            "upload_sessions", "contract_files"
         };
 
         for (String tableName : expectedTables) {

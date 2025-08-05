@@ -1,4 +1,4 @@
-package app.likha.contracts.internal.service;
+package app.likha.users.internal.service;
 
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
@@ -10,33 +10,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Internal service for Contract Management health validation.
+ * Internal service for User Management health validation.
  * 
- * Validates that all required contract management tables exist and are accessible,
+ * Validates that all required user management tables exist and are accessible,
  * including proper multi-tenant configuration with Row Level Security.
  * 
- * This service ensures the contract management bounded context is ready
+ * This service ensures the user management bounded context is ready
  * for operation and all database infrastructure is properly configured.
  * 
- * Following Spring Modulith principles, this service is internal to the contracts module
+ * Following Spring Modulith principles, this service is internal to the users module
  * and should only be accessed through the public API (controller layer).
  */
 @Service
-public class ContractManagementHealthService implements HealthIndicator {
+public class UserManagementHealthService implements HealthIndicator {
 
     private final JdbcTemplate jdbcTemplate;
 
-    // Required contract management tables that must exist and be accessible
+    // Required user management tables that must exist and be accessible
     private static final String[] REQUIRED_TABLES = {
-        "licensors", "licensees", "brands", "business_contracts", "contract_versions", "contract_access_log"
+        "tenants", "users", "security_audit_log"
     };
 
     // Tables that must have Row Level Security enabled
     private static final String[] RLS_REQUIRED_TABLES = {
-        "licensors", "licensees", "brands", "business_contracts", "contract_versions", "contract_access_log"
+        "tenants", "users", "security_audit_log"
     };
 
-    public ContractManagementHealthService(JdbcTemplate jdbcTemplate) {
+    public UserManagementHealthService(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -49,7 +49,7 @@ public class ContractManagementHealthService implements HealthIndicator {
             List<String> missingTables = validateTableExistence();
             if (!missingTables.isEmpty()) {
                 return Health.down()
-                    .withDetail("error", "Contract management schema validation failed")
+                    .withDetail("error", "User management schema validation failed")
                     .withDetail("missing_tables", missingTables)
                     .withDetail("validation_time", System.currentTimeMillis() - startTime)
                     .build();
@@ -85,13 +85,13 @@ public class ContractManagementHealthService implements HealthIndicator {
 
         } catch (DataAccessException e) {
             return Health.down()
-                .withDetail("error", "Database access failed during contract schema validation")
+                .withDetail("error", "Database access failed during user management schema validation")
                 .withDetail("exception", e.getMessage())
                 .withDetail("validation_time", System.currentTimeMillis() - startTime)
                 .build();
         } catch (Exception e) {
             return Health.down()
-                .withDetail("error", "Unexpected error during contract schema validation")
+                .withDetail("error", "Unexpected error during user management schema validation")
                 .withDetail("exception", e.getMessage())
                 .withDetail("validation_time", System.currentTimeMillis() - startTime)
                 .build();
@@ -99,7 +99,7 @@ public class ContractManagementHealthService implements HealthIndicator {
     }
 
     /**
-     * Validates that all required contract management tables exist.
+     * Validates that all required user management tables exist.
      * 
      * @return List of missing table names, empty if all tables exist
      */

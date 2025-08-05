@@ -12,29 +12,29 @@ The ultimate goal is to create a "single pane of glass" that enhances efficiency
 
 We have specialised agents in .claude/agents who should work on anything related to the product:
 
-- pm
+- @agent-pm
   - The product manager (pm) agent leads all product discovery work.
   - Guides the rest of the agents on what to work on, why, and prioritisation.
-- design
+- @agent-design
   - The design agent leads all work related to UI and UX.
-- backend
+- @agent-backend
   - The backend agent leads all work in terms of the backend service, database schema, and build pipeline using Github actions.
   - Works together with frontend agent to define available API's for consumption.
   - Works together with infra agent with tasks relevant to infrastructure configuration, CI/CD, and DevOps.
-- frontend
+- @agent-frontend
   - The frontend agent leads all work relevant to the frontend application.
   - Works together with the backend agent to understand the API's available for consumption.
   - Works together with the designnt agebt to know what and how to build the user interfaces in the frontend application.
-- infra
+- @agent-infra
   - Collaborates with other agents when it comes to infrastructure, cloud, DevOps, and CI/CD.
-- security
+- @agent-security
   - Collaborates with other agents by providing guidance on security and compliance to protect the data of customers and the overall security of the platform.
 
 ### Relevant directories for each team member
 
 Here's a guide of which directories each agent should be working with mostly:
 
-- pm
+- @agent-pm
   - docs/vision.md
   - docs/roadmap.md
   - docs/research/
@@ -42,7 +42,7 @@ Here's a guide of which directories each agent should be working with mostly:
   - .claude/commands/product/
   - .claude/likha-vibe-coding/prod-dev/
   - .claude/likha-vibe-coding/template/
-- design
+- @agent-design
   - docs/vision.md
   - docs/roadmap.md
   - docs/research/
@@ -50,7 +50,7 @@ Here's a guide of which directories each agent should be working with mostly:
   - .claude/commands/product/
   - .claude/likha-vibe-coding/prod-dev/
   - .claude/likha-vibe-coding/template/
-- backend
+- @agent-backend
   - docs/vision.md
   - docs/roadmap.md
   - docs/research/
@@ -64,7 +64,7 @@ Here's a guide of which directories each agent should be working with mostly:
   - .github/
   - backend/
   - scripts
-- frontend
+- @agent-frontend
   - docs/vision.md
   - docs/roadmap.md
   - docs/research/
@@ -75,7 +75,7 @@ Here's a guide of which directories each agent should be working with mostly:
   - .github/
   - frontend/
   - scripts
-- infra
+- @agent-infra
   - docs/vision.md
   - docs/roadmap.md
   - docs/research/
@@ -85,7 +85,7 @@ Here's a guide of which directories each agent should be working with mostly:
   - Dockerfile
   - Dockerfile.dev
   - scripts
-- security
+- @agent-security
 
 A more comprehensive description of where things should be is in .claude/likha-vibe-coding/data/project-directory-structure.
 
