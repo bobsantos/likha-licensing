@@ -342,40 +342,6 @@ Solutions:
             <properties>
                 <frontend.skip>false</frontend.skip>
             </properties>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <!-- Flyway Database Migration Plugin for CI -->
-                        <plugin>
-                            <groupId>org.flywaydb</groupId>
-                            <artifactId>flyway-maven-plugin</artifactId>
-                            <version>9.22.3</version>
-                            <configuration>
-                                <!-- CI configuration using environment variables -->
-                                <url>jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}</url>
-                                <user>${POSTGRES_USER}</user>
-                                <password>${POSTGRES_PASSWORD}</password>
-                                <locations>
-                                    <location>classpath:db/migration</location>
-                                </locations>
-                                <baselineOnMigrate>true</baselineOnMigrate>
-                                <validateOnMigrate>true</validateOnMigrate>
-                                <cleanDisabled>true</cleanDisabled>
-                                <schemas>
-                                    <schema>public</schema>
-                                </schemas>
-                            </configuration>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>org.postgresql</groupId>
-                                    <artifactId>postgresql</artifactId>
-                                    <version>42.7.7</version>
-                                </dependency>
-                            </dependencies>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
         </profile>
         
         <!-- IDE Development Profile (skips frontend for IDE compatibility) -->
