@@ -11,6 +11,7 @@ Work on the next uncompleted todo item from the product development todo list.
 ## Description
 
 This command will:
+
 1. Read the todo list from `@.claude/likha-vibe-coding/prod-dev/todo.md`
 2. Find the next uncompleted todo item (marked with `- [ ]`)
 3. Identify the lead agent and supporting agents from the task metadata
@@ -20,9 +21,11 @@ This command will:
 ## Workflow
 
 ### 1. Read Todo List
+
 - Load the current todo list from `@.claude/likha-vibe-coding/prod-dev/todo.md`
 
 ### 2. Find Next Task and Lead Agent
+
 - Look for the first uncompleted task `- [ ]` in priority order:
   - First check HIGH priority tasks
   - Then MEDIUM priority tasks
@@ -31,6 +34,7 @@ This command will:
 - **No further analysis required** - proceed immediately to delegation
 
 ### 3. Delegate to Lead Agent
+
 - Identify the **Task Owner** from the todo metadata (e.g., @agent-infra, @agent-backend, etc.)
 - Use the following delegation template for ALL agents:
 
@@ -61,11 +65,13 @@ Follow your work guide at {work_guide_path}
 ```
 
 ### 4. Task Execution
+
 - Lead agent implements the task
 - Coordinates with supporting agents as specified
 - Validates implementation against acceptance criteria
 
 ### 5. Validation & Update Status
+
 - Before marking task as completed:
   - Run all tests to ensure nothing breaks from the changes
   - Verify the implementation meets acceptance criteria
@@ -88,31 +94,6 @@ Follow your work guide at {work_guide_path}
 8. Updates todo-1 from [ ] to [x] in the file
 9. Reports completion to user
 ```
-
-## Work Guide
-
-Each agent should follow their specific work guide when executing tasks:
-
-- **@agent-infra**: Follow `@.claude/likha-vibe-coding/checklist/infra-work-guide.md`
-  - Infrastructure best practices
-  - Docker and AWS configuration
-  - Security collaboration requirements
-  
-- **@agent-backend**: Follow `@.claude/likha-vibe-coding/checklist/backend-work-guide.md`
-  - Spring Boot and Domain-Driven Design
-  - API development standards
-  - Testing strategies
-  
-- **@agent-frontend**: Follow `@.claude/likha-vibe-coding/checklist/frontend-work-guide.md`
-  - React and TypeScript patterns
-  - Accessibility requirements
-  - UI/UX collaboration
-
-All work guides emphasize:
-- Test-Driven Development (TDD) approach
-- Collaboration with supporting teams
-- Security review requirements before production deployment
-- Documentation and knowledge sharing
 
 ## Notes
 

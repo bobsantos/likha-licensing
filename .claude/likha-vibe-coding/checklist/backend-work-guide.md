@@ -31,6 +31,8 @@ Before writing ANY implementation code, you MUST complete these steps IN ORDER:
   - Write unit tests for business logic
 - [ ] Get user confirmation or wait 30 seconds for implicit approval
 - [ ] Only then proceed with implementation to make tests pass
+- [ ] **MANDATORY**: Run `mvn clean verify` after implementation to ensure all tests pass
+- [ ] **MANDATORY**: Fix any test failures before claiming task completion
 
 **CRITICAL**: If you skip any of these steps, the user will interrupt you and you'll need to start over.
 
@@ -48,9 +50,44 @@ Before writing ANY implementation code, you MUST complete these steps IN ORDER:
 - Write failing tests first (Red phase)
 - Implement minimal code to pass (Green phase)
 - Refactor for clarity and design (Refactor phase)
+- **MANDATORY**: Run `mvn clean verify` to ensure all tests pass
+- **MANDATORY**: Fix any test failures before proceeding
 - Reference: TDD Best Practices guide
 
-### 2. Implementation Guidelines
+### 2. Implementation Verification
+
+**CRITICAL VERIFICATION STEP - NEVER SKIP THIS**
+
+After ANY implementation work, you MUST:
+
+1. **Run Full Test Suite**: Execute `mvn clean verify` to run all tests
+2. **Check Test Results**: Ensure ALL tests pass (0 failures, 0 errors)
+3. **Fix Any Failures**: Address any test failures immediately
+4. **Re-run Tests**: Verify fixes by running `mvn clean verify` again
+5. **Only Then**: Mark task as complete
+
+**Why This Matters:**
+- Prevents broken code from being committed
+- Ensures all existing functionality still works
+- Validates new implementation doesn't break tests
+- Maintains code quality and system stability
+
+**Command to Run:**
+```bash
+mvn clean verify
+```
+
+This command will:
+- Clean previous builds (`clean`)
+- Compile code
+- Run unit tests
+- Run integration tests
+- Run any verification checks
+- Report all failures clearly
+
+**DO NOT** claim task completion if this step fails or is skipped.
+
+### 3. Implementation Guidelines
 
 **Spring Boot Architecture**
 
@@ -81,7 +118,7 @@ Before writing ANY implementation code, you MUST complete these steps IN ORDER:
 - Write efficient SQL queries
 - Handle multi-tenant context properly
 
-### 3. Collaboration Requirements
+### 4. Collaboration Requirements
 
 **CRITICAL**: Always collaborate with supporting teams when tasks require it!
 
@@ -117,7 +154,7 @@ Before writing ANY implementation code, you MUST complete these steps IN ORDER:
 - Data validation rules
 - Business workflow implementation
 
-### 4. Testing Strategy
+### 5. Testing Strategy
 
 **Unit Testing**
 
@@ -148,7 +185,7 @@ void shouldCalculateLicenseFee() {
 - Validate API contracts with consumers
 - Test error scenarios thoroughly
 
-### 5. Code Quality Standards
+### 6. Code Quality Standards
 
 **Clean Code Principles**
 
